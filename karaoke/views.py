@@ -85,34 +85,103 @@ def karaoke_list(request):
     return render(request, 'karaoke/rooms.html', {'rooms': rooms, 'bookings': bookings, 'currency': CURRENCY})
 
 @login_required
+def start_session(request):
+    """Start a new karaoke session."""
+    outlet = get_user_outlet(request.user)
+    if request.method == 'POST':
+        room_id = request.POST.get('room_id')
+        customer_name = request.POST.get('customer_name')
+        duration = int(request.POST.get('duration', 60))
+        
+        room = get_object_or_404(Room, id=room_id, outlet=outlet)
+        room.status = 'Active'
+        room.save()
+        
+        session = RoomSession.objects.create(
+            outlet=outlet,
+            room=room,
+            customer_name=customer_name,
+            booked_duration_minutes=duration,
+            base_rate=room.get_hourly_rate(),
+            status='Active',
+            started_at=timezone.now()
+        )
+        return redirect('checkout_session', session_id=session.id)
+    
+    rooms = Room.objects.filter(outlet=outlet, status='Available')
+    return render(request, 'karaoke/start_session.html', {'rooms': rooms})
+
+@login_required
 def checkout_session(request, session_id):
+    """Checkout and close a karaoke session."""
     session = get_object_or_404(RoomSession, id=session_id)
     outlet = get_user_outlet(request.user)
     
-    duration = (timezone.now() - session.start_time).total_seconds() / 3600
-    hours = max(1, round(duration)) 
-    rate = 150 if "VIP" in session.room_name else 100 
-    room_charge = Decimal(hours * rate)
-    kitchen_total = session.orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
-    grand_total = room_charge + Decimal(kitchen_total)
+    # Ensure outlet isolation
+    if session.outlet != outlet:
+        return redirect('karaoke_list')
+    
+    # Complete session and calculate charges
+    session.complete_session()
+    kitchen_total = session.orders.aggregate(Sum('total_price'))['total_price__sum'] or Decimal('0')
+    session.food_beverage_charge = Decimal(kitchen_total)
+    session.recalculate_total()
 
     if request.method == 'POST':
-        submitted_amount = Decimal(request.POST.get('final_amount', grand_total))
+        session.status = 'Completed'
+        session.save()
+        
+        # Record payment
         SaleTransaction.objects.create(
             outlet=outlet, 
-            total_amount=submitted_amount,
-            payment_method=request.POST.get('payment_method'),
+            customer=session.customer,
+            total_amount=session.total_charge,
+            payment_method=request.POST.get('payment_method', 'Cash'),
             customer_name=session.customer_name, 
             status='Completed'
         )
-        session.is_active = False
-        session.save()
+        
+        # Mark room as available for cleaning
+        session.room.status = 'Cleaning'
+        session.room.save()
+        
         return redirect('karaoke_list')
 
     return render(request, 'karaoke/checkout.html', {
-        'session': session, 'room_charge': room_charge,
-        'kitchen_total': kitchen_total, 'grand_total': grand_total, 
-        'payment_methods': PAYMENT_METHODS, 'currency': CURRENCY
+        'session': session,
+        'room_charge': session.room_charge,
+        'extra_time_charge': session.extra_time_charge,
+        'kitchen_total': session.food_beverage_charge,
+        'grand_total': session.total_charge,
+        'payment_methods': PAYMENT_METHODS,
+        'currency': CURRENCY
+    })
+
+@login_required
+def manage_session(request, session_id):
+    """Manage active session - pause, add time, etc."""
+    session = get_object_or_404(RoomSession, id=session_id)
+    outlet = get_user_outlet(request.user)
+    
+    if session.outlet != outlet:
+        return redirect('karaoke_list')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'pause':
+            session.pause_session()
+        elif action == 'resume':
+            session.resume_session()
+        elif action == 'add_time':
+            minutes = int(request.POST.get('minutes', 0))
+            session.add_extra_time(minutes)
+            session.save()
+    
+    return render(request, 'karaoke/manage_session.html', {
+        'session': session,
+        'elapsed_minutes': session.get_elapsed_minutes(),
+        'currency': CURRENCY
     })
 
 # --- SALES HISTORY (Fixing IDR to MVR) ---

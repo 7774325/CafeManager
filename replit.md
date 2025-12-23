@@ -8,146 +8,168 @@ Multi-tenant, enterprise-grade platform for managing independent hospitality out
 ### Phase 1: Multi-Tenant Architecture ✅
 **Every record tied to an Outlet ID - Complete data isolation**
 
-**Models with Outlet FK:**
-- Employee, Product, SaleTransaction, Expense, Customer
-- StockAdjustment, CreditPayment, RoomSession, BookingRequest
-- RoomOrder, RoomOrderItem, Room
-
-**Core Components:**
-- **Multi-Tenant Utilities** (`core/multi_tenant.py`): get_user_outlet(), OutletQuerySet, MultiTenantMixin
-- **Outlet Middleware** (`CafeManager/middleware.py`): Attaches request.outlet to every request
-- **Automatic Filtering**: All views use `request.outlet` or `get_user_outlet()`
+- Outlet Middleware (`CafeManager/middleware.py`): `request.outlet` on every request
+- Multi-Tenant Utilities: `get_user_outlet()`, `MultiTenantMixin`
+- All core models have outlet FK: Employee, Product, SaleTransaction, Customer, etc.
 
 ---
 
 ### Phase 2: POS System ✅
 **Interactive product grid, live cart, checkout with real-time stock deduction**
 
-**Features:**
-- Interactive product grid (filtered by outlet)
-- Real-time order cart with quantity controls
-- Customer selection (outlet-specific customers)
+- Product grid (filtered by outlet)
+- Real-time cart with quantity controls
+- Customer selection (outlet-specific)
 - Payment methods: Cash, Card, Transfer, Credit
 - Real-time stock deduction on checkout
-- Customer visit count tracking
-- Customer credit balance updates
+- Customer visit count & credit tracking
 
-**Key Endpoint:**
-```
-POST /api/pos/submit/
-{
-    "customer_id": int|null,
-    "table_number": string,
-    "payment_method": "Cash|Card|Transfer|Credit",
-    "items": [
-        {"id": product_id, "name": name, "price": price, "quantity": qty}
-    ]
-}
-```
-
-**Views:**
-- `GET /pos/` - POS Interface (shows outlet-specific products & customers)
-- `POST /api/pos/submit/` - Checkout (creates SaleTransaction & deducts stock)
+**Endpoints:**
+- `GET /pos/` - POS Interface
+- `POST /api/pos/submit/` - Checkout
 
 ---
 
-## Project Architecture
-- **Framework**: Django 5.2 + Django REST Framework
-- **ASGI Server**: Daphne (WebSocket support)
-- **Real-Time**: Django Channels for live updates
-- **Database**: SQLite (dev), PostgreSQL (production)
-- **Language**: Python 3.11+
+### Phase 3: Karaoke Module Backend ✅
+**Complete karaoke session lifecycle with duration-based billing**
 
----
-
-## Directory Structure
+#### **Room Model**
 ```
-CafeManager/              # Project settings + middleware
-  - middleware.py         # Multi-tenant outlet middleware
-core/                     # POS, Finance, HR
-  - multi_tenant.py       # Multi-tenant utilities
-  - models.py             # Outlet, Employee, Product, Sale, etc.
-  - views.py              # Views with outlet filtering
-  - admin.py              # Admin with outlet filters
-  - urls.py               # POS routes
-  - templates/core/pos.html
-karaoke/                  # Room management + orders
-  - models.py             # Room, RoomSession, RoomOrder, etc.
-  - consumers.py          # WebSocket consumers
-  - routing.py            # WebSocket routing
-templates/                # HTML templates
-media/                    # Product images
-staticfiles/              # Static assets
+- Multi-tenant (outlet FK)
+- Status: Available → Booked → Active → Cleaning
+- Types: VIP, Standard
+- Pricing: price_per_hour, price_per_minute (configurable)
+- Capacity tracking
 ```
 
----
+#### **RoomSession Model** (Karaoke Session)
+**Complete session tracking:**
+```
+Session Lifecycle:
+  Booked → Active → Paused → Completed
+  
+Timing Fields:
+  - booked_at: When session was booked
+  - started_at: When customer actually started using room
+  - paused_at: When session was paused (if applicable)
+  - ended_at: When session was finalized
+  
+Duration Tracking:
+  - booked_duration_minutes: Originally booked time
+  - actual_duration_minutes: Time actually used
+  - total_pause_minutes: Time paused (excluded from billing)
+  - extra_time_minutes: Additional time added mid-session
+  
+Billing Fields:
+  - base_rate: Hourly rate at session start (defaults to room rate)
+  - room_charge: Base charge (calculated)
+  - extra_time_charge: Extra time premium (calculated)
+  - food_beverage_charge: F&B from RoomOrder items
+  - total_charge: Grand total (calculated)
+```
 
-## How to Use (Quick Start)
-
-### Multi-Tenant Filtering
+#### **Billing Calculation (Per Spec)**
 ```python
-# All views automatically use request.outlet:
-outlet = request.outlet
+# Formula for room charge:
+room_charge = (actual_minutes + extra_minutes) / 60 * hourly_rate
 
-# Filter data:
-Product.objects.filter(outlet=outlet)
-
-# Or use helper:
-from core.multi_tenant import get_user_outlet
-outlet = get_user_outlet(request.user)
+# Example:
+# 90 minutes session at 100/hour = 1.5 * 100 = 150
+# + 30 minutes extra = 0.5 * 100 = 50 extra charge
+# + F&B = 200
+# TOTAL = 150 + 50 + 200 = 400
 ```
 
-### POS System
-1. Navigate to `/pos/`
-2. Select customer (optional)
-3. Click products to add to cart
-4. Select payment method
-5. Click "SUBMIT & PRINT"
-6. SaleTransaction created with outlet isolation
+#### **Session Methods**
+```python
+# Timing
+session.get_elapsed_minutes()        # Minutes used (excl. pauses)
+
+# Billing (All return Decimal)
+session.calculate_room_charge()      # Base charge
+session.calculate_extra_time_charge() # Extra time premium
+session.recalculate_total()          # Recalc: room + extra + F&B
+
+# Session Management
+session.pause_session()              # Pause active session
+session.resume_session()             # Resume paused session
+session.add_extra_time(minutes)      # Add time mid-session
+session.complete_session()           # Finalize & close
+```
+
+#### **Views**
+- **start_session**: Create new session, set room to Active
+- **manage_session**: Pause/resume, add time (POST-based actions)
+- **checkout_session**: Complete session, calculate charges, create SaleTransaction
+
+#### **Admin Interface**
+- Room management (status, pricing, capacity)
+- RoomSession admin with full billing details
+- BookingRequest, RoomOrder, RoomOrderItem admin panels
+
+#### **Multi-Tenant Safety**
+- All sessions filtered by `request.outlet`
+- Checkout checks `session.outlet == request.outlet`
+- Cascade deletes respect outlet isolation
 
 ---
 
-## Database Migrations Applied
-- Migration 0022 (core): outlet FK on Customer, StockAdjustment, CreditPayment
-- Migration 0010 (karaoke): outlet FK on BookingRequest, RoomOrder, RoomOrderItem
+## Key Database Models & Relations
+```
+Outlet (1) ─────────→ (∞) Room
+  ├─────────→ (∞) RoomSession
+  ├─────────→ (∞) Product
+  ├─────────→ (∞) SaleTransaction
+  └─────────→ (∞) Customer
+
+Room (1) ────────────→ (∞) RoomSession
+RoomSession (1) ────→ (∞) RoomOrder
+RoomOrder (1) ───────→ (∞) RoomOrderItem ──→ Product
+```
 
 ---
 
-## TODO - Next Phases
+## API Routes (Karaoke)
 
-1. **Karaoke Module** (Priority)
-   - Session management (Available → Booked → Active → Cleaning)
-   - Room lifecycle tracking
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/karaoke/session/start/` | Session creation form |
+| POST | `/karaoke/session/start/` | Create new session |
+| GET | `/karaoke/session/manage/<id>/` | Manage active session |
+| POST | `/karaoke/session/manage/<id>/` | Pause/resume/add time |
+| GET | `/karaoke/session/checkout/<id>/` | Checkout form |
+| POST | `/karaoke/session/checkout/<id>/` | Finalize session & payment |
+
+---
+
+## Recent Changes (2025-12-23)
+- **Phase 3 Karaoke Module**: Complete backend implementation
+  - Room model with status lifecycle
+  - RoomSession with comprehensive billing logic
+  - Duration-based pricing: (minutes / 60) × hourly_rate
+  - Session pause/resume tracking
+  - Extra time management
+  - Admin interface for room & session management
+  - Multi-tenant outlet isolation on all models
+  - Database migrations: 0012_delete_roomsession_roomsession_and_more
+
+---
+
+## Next Phases
+
+1. **Karaoke Frontend** (Priority)
+   - Session dashboard with real-time progress bars
    - Tablet interface for in-room orders
-   - Session monitoring with real-time progress
-   - Extra time management
+   - Staff session management interface
 
 2. **Inventory Intelligence**
-   - Low stock alert reports
-   - Predictive stock deduction validation
+   - Low stock alert system
    - Multi-outlet stock transfers
 
 3. **HR & Payroll** (Complex)
    - Three payment types: P (Fixed), C (Hourly), D (Daily)
-   - Attendance tracking (clock-in/out with GPS tagging)
-   - Automated payroll calculations
+   - Attendance tracking with GPS
 
 4. **Financial Intelligence**
-   - P&L summary reports (Revenue - Expenses)
-   - Expense auditing with receipt uploads
-   - Outlet performance comparison
-   - Daily/Weekly/Monthly summaries
-
-5. **Kitchen Display System**
-   - Real-time order push via WebSockets
-   - Order status tracking
-   - Integrate with cart checkout
-
----
-
-## Recent Changes
-- 2025-12-23: Multi-tenant foundation + POS system implemented
-  - All models tied to Outlet
-  - Middleware for automatic request.outlet
-  - Interactive POS with cart and checkout
-  - Real-time stock deduction
+   - P&L reports (Revenue - Expenses)
+   - Outlet performance dashboards

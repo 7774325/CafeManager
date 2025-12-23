@@ -9,8 +9,9 @@ urlpatterns = [
     
     # Room & Session Management
     path('rooms/', views.karaoke_list, name='karaoke_list'),
-    path('rooms/start/', views.start_session, name='start_session'),
-    path('rooms/checkout/<int:session_id>/', views.checkout_session, name='checkout_session'),
+    path('session/start/', views.start_session, name='start_session'),
+    path('session/manage/<int:session_id>/', views.manage_session, name='manage_session'),
+    path('session/checkout/<int:session_id>/', views.checkout_session, name='checkout_session'),
     
     # Kitchen & Ordering
     path('kitchen/', views.kitchen_view, name='kitchen_view'),
