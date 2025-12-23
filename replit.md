@@ -3,103 +3,151 @@
 ## Overview
 Multi-tenant, enterprise-grade platform for managing independent hospitality outlets. Designed as "Loyverse+" with deep karaoke integration, real-time POS, and automated HR/payroll.
 
-## Multi-Tenant Architecture (Foundation)
+## PHASES COMPLETED
 
-### Data Isolation Strategy
-Every record is tied to an `Outlet ID`. Staff at one outlet cannot see another outlet's data.
+### Phase 1: Multi-Tenant Architecture ✅
+**Every record tied to an Outlet ID - Complete data isolation**
 
 **Models with Outlet FK:**
 - Employee, Product, SaleTransaction, Expense, Customer
-- StockAdjustment, CreditPayment
-- RoomSession, BookingRequest, RoomOrder, RoomOrderItem, Room
+- StockAdjustment, CreditPayment, RoomSession, BookingRequest
+- RoomOrder, RoomOrderItem, Room
 
-### Key Components
+**Core Components:**
+- **Multi-Tenant Utilities** (`core/multi_tenant.py`): get_user_outlet(), OutletQuerySet, MultiTenantMixin
+- **Outlet Middleware** (`CafeManager/middleware.py`): Attaches request.outlet to every request
+- **Automatic Filtering**: All views use `request.outlet` or `get_user_outlet()`
 
-#### 1. Multi-Tenant Utilities (`core/multi_tenant.py`)
-- **get_user_outlet()**: Gets the logged-in user's outlet
-- **OutletQuerySet/OutletManager**: Custom managers for filtering
-- **MultiTenantMixin**: View mixin for automatic outlet filtering
-- **filter_queryset_for_user()**: Generic filtering function
+---
 
-#### 2. Outlet Middleware (`CafeManager/middleware.py`)
-- Automatically attaches `request.outlet` to every authenticated request
-- Accessible in all views via `request.outlet`
+### Phase 2: POS System ✅
+**Interactive product grid, live cart, checkout with real-time stock deduction**
 
-#### 3. Usage in Views
-```python
-# Views can use:
-outlet = request.outlet  # From middleware
-# OR
-from core.multi_tenant import get_user_outlet
-outlet = get_user_outlet(request.user)
+**Features:**
+- Interactive product grid (filtered by outlet)
+- Real-time order cart with quantity controls
+- Customer selection (outlet-specific customers)
+- Payment methods: Cash, Card, Transfer, Credit
+- Real-time stock deduction on checkout
+- Customer visit count tracking
+- Customer credit balance updates
 
-# Filter querysets:
-Product.objects.filter(outlet=outlet)
+**Key Endpoint:**
+```
+POST /api/pos/submit/
+{
+    "customer_id": int|null,
+    "table_number": string,
+    "payment_method": "Cash|Card|Transfer|Credit",
+    "items": [
+        {"id": product_id, "name": name, "price": price, "quantity": qty}
+    ]
+}
 ```
 
+**Views:**
+- `GET /pos/` - POS Interface (shows outlet-specific products & customers)
+- `POST /api/pos/submit/` - Checkout (creates SaleTransaction & deducts stock)
+
+---
+
 ## Project Architecture
-- **Framework**: Django 5.2 with Django REST Framework
+- **Framework**: Django 5.2 + Django REST Framework
 - **ASGI Server**: Daphne (WebSocket support)
 - **Real-Time**: Django Channels for live updates
 - **Database**: SQLite (dev), PostgreSQL (production)
 - **Language**: Python 3.11+
 
+---
+
 ## Directory Structure
 ```
-CafeManager/          # Project settings + middleware
-  - middleware.py     # Multi-tenant outlet middleware
-core/                 # Core POS, Finance, HR
-  - multi_tenant.py   # Multi-tenant utilities
-  - models.py         # Outlet, Employee, Product, Sale, Customer, etc.
-  - views.py          # Views using outlet filtering
-  - admin.py          # Admin with outlet filters
-karaoke/              # Room management + orders
-  - models.py         # Room, RoomSession, RoomOrder, etc.
-  - consumers.py      # WebSocket consumers
-  - routing.py        # WebSocket routing
-templates/            # HTML templates
-media/                # Product images
-staticfiles/          # Static assets
+CafeManager/              # Project settings + middleware
+  - middleware.py         # Multi-tenant outlet middleware
+core/                     # POS, Finance, HR
+  - multi_tenant.py       # Multi-tenant utilities
+  - models.py             # Outlet, Employee, Product, Sale, etc.
+  - views.py              # Views with outlet filtering
+  - admin.py              # Admin with outlet filters
+  - urls.py               # POS routes
+  - templates/core/pos.html
+karaoke/                  # Room management + orders
+  - models.py             # Room, RoomSession, RoomOrder, etc.
+  - consumers.py          # WebSocket consumers
+  - routing.py            # WebSocket routing
+templates/                # HTML templates
+media/                    # Product images
+staticfiles/              # Static assets
 ```
 
-## Running the Application
-```bash
-daphne -b 0.0.0.0 -p 5000 CafeManager.asgi:application
-```
+---
 
-## Multi-Tenant Implementation Notes
+## How to Use (Quick Start)
 
-### Adding New Models
-When creating models that should be multi-tenant:
+### Multi-Tenant Filtering
 ```python
-class MyModel(models.Model):
-    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, related_name='my_models')
-    # other fields...
+# All views automatically use request.outlet:
+outlet = request.outlet
+
+# Filter data:
+Product.objects.filter(outlet=outlet)
+
+# Or use helper:
+from core.multi_tenant import get_user_outlet
+outlet = get_user_outlet(request.user)
 ```
 
-### Filtering Data in Views
-```python
-@login_required
-def my_view(request):
-    outlet = request.outlet  # From middleware
-    my_data = MyModel.objects.filter(outlet=outlet)
-    return render(request, 'template.html', {'data': my_data})
-```
+### POS System
+1. Navigate to `/pos/`
+2. Select customer (optional)
+3. Click products to add to cart
+4. Select payment method
+5. Click "SUBMIT & PRINT"
+6. SaleTransaction created with outlet isolation
 
-### Database Migrations Applied
-- Migration 0022 (core): Added outlet FK to Customer, StockAdjustment, CreditPayment
-- Migration 0010 (karaoke): Added outlet FK to BookingRequest, RoomOrder, RoomOrderItem
+---
 
-## Recent Changes
-- 2025-12-23: Multi-tenant foundation implemented
-  - All models now tied to Outlet
-  - Middleware for automatic request.outlet
-  - Utility functions for filtering
-  - Admin interface outlet filters configured
+## Database Migrations Applied
+- Migration 0022 (core): outlet FK on Customer, StockAdjustment, CreditPayment
+- Migration 0010 (karaoke): outlet FK on BookingRequest, RoomOrder, RoomOrderItem
+
+---
 
 ## TODO - Next Phases
-1. **POS System** - Interactive product grid, live order cart, split billing
-2. **Karaoke Module** - Session management, room lifecycle, tablet interface
-3. **Inventory** - Real-time stock deduction, low stock alerts
-4. **HR & Payroll** - Three payment types (P/C/D), attendance tracking
-5. **Financial Reports** - P&L, expense auditing, outlet performance
+
+1. **Karaoke Module** (Priority)
+   - Session management (Available → Booked → Active → Cleaning)
+   - Room lifecycle tracking
+   - Tablet interface for in-room orders
+   - Session monitoring with real-time progress
+   - Extra time management
+
+2. **Inventory Intelligence**
+   - Low stock alert reports
+   - Predictive stock deduction validation
+   - Multi-outlet stock transfers
+
+3. **HR & Payroll** (Complex)
+   - Three payment types: P (Fixed), C (Hourly), D (Daily)
+   - Attendance tracking (clock-in/out with GPS tagging)
+   - Automated payroll calculations
+
+4. **Financial Intelligence**
+   - P&L summary reports (Revenue - Expenses)
+   - Expense auditing with receipt uploads
+   - Outlet performance comparison
+   - Daily/Weekly/Monthly summaries
+
+5. **Kitchen Display System**
+   - Real-time order push via WebSockets
+   - Order status tracking
+   - Integrate with cart checkout
+
+---
+
+## Recent Changes
+- 2025-12-23: Multi-tenant foundation + POS system implemented
+  - All models tied to Outlet
+  - Middleware for automatic request.outlet
+  - Interactive POS with cart and checkout
+  - Real-time stock deduction

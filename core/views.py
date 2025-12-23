@@ -110,6 +110,7 @@ def export_data(request):
 def record_sale(request):
     outlet = get_user_outlet(request.user)
     products = Product.objects.filter(outlet=outlet).order_by('name')
+    customers = Customer.objects.filter(outlet=outlet).order_by('name')
     
     # SITA FIX: Get unique category list only
     categories = Product.objects.filter(outlet=outlet).values_list('category', flat=True).distinct().order_by('category')
@@ -119,8 +120,10 @@ def record_sale(request):
     
     return render(request, 'core/pos.html', {
         'products': products,
+        'customers': customers,
         'categories': categories,
-        'favorites': favorites
+        'favorites': favorites,
+        'outlet': outlet
     })
 
 @login_required
@@ -128,43 +131,63 @@ def submit_sale(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            cart = data.get('cart', [])
-            payment_method = data.get('payment_method')
-            customer_name = data.get('customer_name')
+            cart = data.get('items', [])
+            payment_method = data.get('payment_method', 'Cash')
+            customer_id = data.get('customer_id')
+            table_number = data.get('table_number', 'Counter')
             outlet = get_user_outlet(request.user)
+            
+            if not cart:
+                return JsonResponse({'success': False, 'error': 'Cart is empty'}, status=400)
             
             total_float = sum(float(item['price']) * int(item['quantity']) for item in cart)
             total_amount = Decimal(str(round(total_float, 2)))
 
-            # Handle Customer Credit logic
+            # Get or create customer (filtered by outlet)
             customer_obj = None
-            if customer_name:
-                customer_obj, created = Customer.objects.get_or_create(name=customer_name)
-                if payment_method == 'Credit':
-                    customer_obj.current_balance += total_amount
-                    customer_obj.save()
+            customer_name = None
+            if customer_id:
+                try:
+                    customer_obj = Customer.objects.get(id=customer_id, outlet=outlet)
+                    customer_name = customer_obj.name
+                except Customer.DoesNotExist:
+                    pass
+            
+            if not customer_name:
+                customer_name = table_number or "Walk-in"
 
             # Create Transaction (Matching our new Model fields)
             transaction = SaleTransaction.objects.create(
                 outlet=outlet, 
+                customer=customer_obj,
                 total_amount=total_amount, 
                 payment_method=payment_method,
-                customer_name=customer_name, # Saved as string in new model
+                customer_name=customer_name,
                 status='Completed'
             )
 
+            # Create Sale Items and deduct stock
             for item in cart:
-                product = Product.objects.get(id=item['id'])
-                # SaleItem now uses 'sale' instead of 'transaction'
-                SaleItem.objects.create(
-                    sale=transaction, 
-                    product=product, 
-                    quantity=item['quantity'], 
-                    price=Decimal(str(item['price'])) # price instead of unit_price
-                )
-                # Deduct Stock
-                product.current_stock_level -= int(item['quantity'])
-                product.save()
+                try:
+                    product = Product.objects.get(id=item['id'], outlet=outlet)
+                    SaleItem.objects.create(
+                        sale=transaction, 
+                        product=product, 
+                        quantity=int(item['quantity']), 
+                        price=Decimal(str(item['price']))
+                    )
+                    # Deduct Stock
+                    product.current_stock_level -= int(item['quantity'])
+                    product.save()
+                except Product.DoesNotExist:
+                    continue
+
+            # Update customer visit count and balance if applicable
+            if customer_obj:
+                customer_obj.visit_count += 1
+                if payment_method == 'Credit':
+                    customer_obj.current_balance += total_amount
+                customer_obj.save()
 
             return JsonResponse({'success': True, 'transaction_id': transaction.id})
         except Exception as e:

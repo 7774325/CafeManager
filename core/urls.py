@@ -5,13 +5,19 @@ urlpatterns = [
     # Main Site Dashboard
     path('', views.dashboard, name='dashboard'),
     
+    # POS System
+    path('pos/', views.record_sale, name='record_sale'),
+    path('api/pos/submit/', views.submit_sale, name='submit_sale'),
+    path('api/product/<int:product_id>/toggle-favorite/', views.toggle_favorite, name='toggle_favorite'),
+    path('receipt/<int:transaction_id>/', views.receipt_detail, name='receipt_detail'),
+    
     # Tools
     path('import/', views.import_data, name='import_data'),
     path('export/', views.export_data, name='export_data'),
     path('stock/bulk/', views.bulk_stock_entry, name='bulk_stock_entry'),
     path('spoilage/', views.log_spoilage, name='log_spoilage'),
     
-    # Financials - UPDATED NAME TO MATCH VIEWS
+    # Financials
     path('reports/financial/', views.financial_summary_report, name='financial_summary'),
     path('expenses/add/', views.add_expense, name='add_expense'),
     path('payroll/', views.payroll_report, name='payroll_report'),

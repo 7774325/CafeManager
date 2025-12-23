@@ -45,9 +45,11 @@
                             <label class="form-label small fw-bold text-uppercase">1. Select Customer</label>
                             <select id="customerSelect" class="form-select">
                                 <option value="">-- Walk-in / Guest --</option>
-                                {% for customer in customers %}
-                                <option value="{{ customer.id }}">{{ customer.name }}</option>
-                                {% endfor %}
+                                {% if customers %}
+                                    {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                    {% endfor %}
+                                {% endif %}
                             </select>
                         </div>
 
@@ -157,7 +159,7 @@
         };
 
         try {
-            const response = await fetch('/karaoke/submit-sale/', {
+            const response = await fetch('/api/pos/submit/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
                 body: JSON.stringify(data)
@@ -165,10 +167,15 @@
             const result = await response.json();
             if (result.success) {
                 alert("Sale Recorded for " + data.table_number);
+                clearCart();
                 location.reload();
+            } else {
+                alert("Error: " + (result.error || "Unknown error"));
+                btn.disabled = false;
+                btn.innerText = "SUBMIT & PRINT";
             }
         } catch (e) {
-            alert("Connection error.");
+            alert("Connection error: " + e);
             btn.disabled = false;
             btn.innerText = "SUBMIT & PRINT";
         }
