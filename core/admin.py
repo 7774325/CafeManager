@@ -34,17 +34,18 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 @admin.register(StockAdjustment)
 class StockAdjustmentAdmin(admin.ModelAdmin):
-    list_display = ('product', 'quantity', 'reason', 'date')
-    list_filter = ('reason',)
+    list_display = ('product', 'quantity', 'reason', 'date', 'outlet')
+    list_filter = ('outlet', 'reason')
 
 # --- NEW: CUSTOMER & CREDIT ADMIN ---
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ('name', 'phone', 'current_balance')
+    list_display = ('name', 'phone', 'current_balance', 'outlet')
+    list_filter = ('outlet',)
     search_fields = ('name', 'phone')
 
 @admin.register(CreditPayment)
 class CreditPaymentAdmin(admin.ModelAdmin):
-    list_display = ('customer', 'amount_paid', 'date', 'notes')
-    list_filter = ('customer', 'date')
+    list_display = ('customer', 'amount_paid', 'date', 'outlet')
+    list_filter = ('outlet', 'customer', 'date')

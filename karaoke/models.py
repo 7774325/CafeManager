@@ -28,6 +28,7 @@ class BookingRequest(models.Model):
         ('Cancelled', 'Cancelled')
     ]
     
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, related_name='booking_requests', null=True)
     customer_name = models.CharField(max_length=200)
     phone_number = models.CharField(max_length=20, blank=True)
     requested_date = models.DateField()
@@ -42,6 +43,7 @@ class BookingRequest(models.Model):
 # --- NEW: KITCHEN/BAR ORDER MODELS ---
 
 class RoomOrder(models.Model):
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, related_name='room_orders', null=True)
     session = models.ForeignKey(RoomSession, on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -51,6 +53,7 @@ class RoomOrder(models.Model):
         return f"Order for {self.session.room_name} at {self.created_at}"
 
 class RoomOrderItem(models.Model):
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, related_name='room_order_items', null=True)
     order = models.ForeignKey(RoomOrder, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
