@@ -21,6 +21,7 @@ urlpatterns = [
     path('accounts/profile/', lambda r: redirect('dashboard')),
 ]
 
-# 6. Serving Media Files (Important for Product Images in POS)
+# 6. Serving Media and Static Files
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
