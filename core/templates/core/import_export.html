@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-5">
+    <div class="card border-0 shadow-sm p-4">
+        <h2 class="fw-bold mb-4">Data Portal</h2>
+        <form action="{% url 'import_data' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Upload <code>export_items.csv</code></label>
+                <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Upload & Sync</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

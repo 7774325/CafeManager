@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+
+{% block header_title %}Reserve Your Room{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg rounded-4 p-4">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold">Book a Session</h2>
+                    <p class="text-muted">Choose your location and preferred time</p>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Location</label>
+                        <select name="outlet" id="outlet-select" class="form-select border-0 bg-light" required>
+                            <option value="" selected disabled>Choose an outlet...</option>
+                            {% for outlet in outlets %}
+                                <option value="{{ outlet.id }}">{{ outlet.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Room</label>
+                        <select name="room" id="room-select" class="form-select border-0 bg-light" required>
+                            <option value="" selected disabled>First, select a location...</option>
+                            </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Date</label>
+                            <input type="date" name="date" class="form-control border-0 bg-light" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Time</label>
+                            <input type="time" name="time" class="form-control border-0 bg-light" required>
+                        </div>
+                    </div>
+
+                    <hr class="my-4 opacity-25">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Your Name</label>
+                        <input type="text" name="name" class="form-control border-0 bg-light" placeholder="Full Name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Phone Number</label>
+                        <input type="tel" name="phone" class="form-control border-0 bg-light" placeholder="e.g. 7771234" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 mt-3 shadow">
+                        Confirm Booking Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Simple filter: only show rooms belonging to the selected outlet
+const rooms = [
+    {% for outlet in outlets %}
+        {% for room in outlet.karaokeroom_set.all %}
+            { id: {{ room.id }}, outletId: {{ outlet.id }}, name: "{{ room.name }}" },
+        {% endfor %}
+    {% endfor %}
+];
+
+document.getElementById('outlet-select').addEventListener('change', function() {
+    const outletId = this.value;
+    const roomSelect = document.getElementById('room-select');
+    roomSelect.innerHTML = '<option value="" selected disabled>Select a room...</option>';
+    
+    rooms.filter(r => r.outletId == outletId).forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.textContent = r.name;
+        roomSelect.appendChild(opt);
+    });
+});
+</script>
+{% endblock %}

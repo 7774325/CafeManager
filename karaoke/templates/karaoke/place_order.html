@@ -1,0 +1,108 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Select Items for {{ outlet.name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-md-3 g-3">
+                        {% for product in products %}
+                        <div class="col">
+                            <button class="btn btn-outline-dark w-100 py-3" 
+                                    onclick="addToCart('{{ product.id }}', '{{ product.name }}', {{ product.selling_price }})">
+                                {{ product.name }}<br>
+                                <small class="text-primary">${{ product.selling_price }}</small>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Current Order</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Room Number</label>
+                        <input type="text" id="room-name" class="form-control" placeholder="e.g. Room 101">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Customer Name</label>
+                        <input type="text" id="cust-name" class="form-control" placeholder="e.g. John Doe">
+                    </div>
+                    
+                    <hr>
+                    <div id="cart-items" class="mb-3">
+                        <p class="text-muted text-center italic">No items selected</p>
+                    </div>
+                    <button class="btn btn-success w-100 py-2 fw-bold" onclick="sendOrder()">
+                        <i class="bi bi-send-fill me-2"></i>SEND TO MONITOR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+    const outletId = "{{ outlet.id }}";
+    // Establish WebSocket connection for sending
+    const socket = new WebSocket(`ws://${window.location.host}/ws/karaoke/staff/${outletId}/`);
+
+    function addToCart(id, name, price) {
+        cart.push({ name, quantity: 1, price });
+        renderCart();
+    }
+
+    function renderCart() {
+        const div = document.getElementById('cart-items');
+        if (cart.length === 0) {
+            div.innerHTML = '<p class="text-muted text-center">No items selected</p>';
+            return;
+        }
+        div.innerHTML = cart.map((item, index) => `
+            <div class="d-flex justify-content-between mb-2">
+                <span>${item.name} x1</span>
+                <span>$${item.price}</span>
+            </div>
+        `).join('');
+    }
+
+    function sendOrder() {
+        const room = document.getElementById('room-name').value;
+        const customer = document.getElementById('cust-name').value;
+
+        if (!room || cart.length === 0) {
+            alert("Please enter a room and select items!");
+            return;
+        }
+
+        const payload = {
+            "type": "order_alert",
+            "order_id": Math.floor(Math.random() * 1000),
+            "room_name": room,
+            "customer": customer || "Guest",
+            "items": cart
+        };
+
+        // Send via WebSocket (This mimics WebSocket King automatically)
+        socket.send(JSON.stringify(payload));
+        
+        // Reset
+        alert("Order sent to Monitor!");
+        cart = [];
+        document.getElementById('room-name').value = '';
+        document.getElementById('cust-name').value = '';
+        renderCart();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room {{ room.name }} - Karaoke Session</title>
+    <style>
+        body { font-family: sans-serif; background-color: #1a1a1a; color: #fff; text-align: center; }
+        .container { max-width: 800px; margin: 50px auto; padding: 20px; border: 1px solid #333; border-radius: 10px; background-color: #2c2c2c; }
+        .header { background-color: #ff5722; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        #timer { font-size: 3em; font-weight: bold; margin: 10px 0; color: #fff; }
+        .order-list { list-style: none; padding: 0; }
+        .order-list li { padding: 10px; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
+        .status-ready { color: #4CAF50; font-weight: bold; }
+        .status-new { color: #FFEB3B; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h2>Welcome to {{ room.name }}!</h2>
+        </div>
+
+        <h3>Time Remaining</h3>
+        <div id="timer">{{ time_remaining_minutes }} minutes</div>
+        
+        <hr>
+
+        <h3>Current Orders</h3>
+        <ul id="current-orders-list" class="order-list">
+            {% for order in current_orders %}
+            <li id="order-{{ order.id }}">
+                <span>Order #{{ order.id }} ({{ order.item_count }} items)</span>
+                <span class="order-status status-{{ order.status|lower }}">{{ order.get_status_display }}</span>
+            </li>
+            {% empty %}
+            <li id="no-orders-message">No pending orders. Place one now!</li>
+            {% endfor %}
+        </ul>
+        
+        <p>Use the tablet to place new orders.</p>
+    </div>
+
+    <script>
+        // CRITICAL: Get the room ID from Django's context for the WebSocket URL
+        const current_room_id = "{{ room.id }}"; 
+        const ordersList = document.getElementById('current-orders-list');
+        const noOrdersMessage = document.getElementById('no-orders-message');
+
+        // --- 1. WebSockets Connection Setup (Core Logic) ---
+        function connectToRoom(room_id) {
+            const socket_protocol = (window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+            const room_websocket_url = `${socket_protocol}//${window.location.host}/ws/karaoke/room/${room_id}/`;
+            
+            const roomSocket = new WebSocket(room_websocket_url);
+
+            roomSocket.onopen = function(e) {
+                console.log(`WebSocket connection established for Room ${room_id}.`);
+            };
+
+            roomSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data).data;
+                handleRealTimeUpdate(data); // Call the handler function below
+            };
+
+            roomSocket.onclose = function(e) {
+                console.warn(`WebSocket closed unexpectedly for Room ${room_id}. Attempting reconnect...`);
+                setTimeout(() => connectToRoom(room_id), 3000); 
+            };
+
+            roomSocket.onerror = function(e) {
+                console.error("WebSocket Error:", e);
+            };
+
+            return roomSocket;
+        }
+
+        // --- 2. In-Room Display Logic (Client-Specific Handler) ---
+        function handleRealTimeUpdate(data) {
+            if (data.type === 'order_update') {
+                const orderId = data.order_id;
+                const status = data.status;
+                const existingItem = document.getElementById(`order-${orderId}`);
+
+                // Scenario 1: Staff marks order as 'Ready' (I4)
+                if (status === 'Ready') {
+                    if (existingItem) {
+                        const statusSpan = existingItem.querySelector('.order-status');
+                        statusSpan.textContent = "READY FOR PICKUP";
+                        statusSpan.className = 'order-status status-ready';
+                        
+                        // Show a highly visible alert
+                        alert(`Order #${orderId} is READY for pickup at the counter!`);
+                    }
+                } 
+                // Scenario 2: Staff marks order as 'Delivered' (I4)
+                else if (status === 'Delivered') {
+                    if (existingItem) {
+                        existingItem.remove(); // Remove item from display list
+                        console.log(`Order #${orderId} delivered and removed from display.`);
+                    }
+                }
+                // Scenario 3: New Order Placed (M2 signal captured here, though usually handled by the order placement API response)
+                else if (status === 'New') {
+                    // This scenario is best handled by the successful API response, 
+                    // but the signal can catch it if the page is refreshed.
+                    console.log(`New Order #${orderId} detected via signal.`);
+                }
+            }
+            // Add logic here for 'timer_update' to update document.getElementById('timer') (I3)
+        }
+
+        // --- 3. Initiate Connection ---
+        connectToRoom(current_room_id);
+    </script>
+</body>
+</html>

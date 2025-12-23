@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid bg-light min-vh-100 p-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+        <div>
+            <h2 class="fw-bold mb-0">{{ session.room_name }}</h2>
+            <p class="text-muted mb-0">Welcome, <strong>{{ session.customer_name }}</strong></p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary fs-5 px-3 py-2" id="tabletTimer">Loading...</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h4 class="fw-bold"><i class="fas fa-utensils me-2 text-warning"></i>Order Snacks & Drinks</h4>
+                </div>
+                <div class="card-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="row g-3">
+                        {% for product in products %}
+                        <div class="col-6 col-lg-4">
+                            <div class="card h-100 border-0 shadow-sm text-center p-2 product-card" 
+                                 onclick="addToTabletCart('{{ product.id }}', '{{ product.name }}', '{{ product.selling_price }}')">
+                                <div class="py-3">
+                                    <i class="fas fa-cocktail fa-2x text-primary mb-2"></i>
+                                    <h6 class="mb-1">{{ product.name }}</h6>
+                                    <p class="text-success fw-bold mb-0">IDR {{ product.selling_price }}</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary rounded-pill mt-2">Add</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Your Order</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="tabletCartItems" class="list-group list-group-flush" style="min-height: 200px;">
+                        <div class="text-center py-5 text-muted empty-msg">
+                            <p>Select items to order</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="h5">Total:</span>
+                        <span class="h5 fw-bold text-primary" id="tabletTotal">IDR 0</span>
+                    </div>
+                    <button class="btn btn-success btn-lg w-100 py-3 fw-bold shadow" id="btnSendToKitchen" onclick="sendToKitchen()" disabled>
+                        SEND TO KITCHEN
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+            <h3>Order Received!</h3>
+            <p>Our staff is preparing your items.</p>
+            <button class="btn btn-primary" data-bs-dismiss="modal">Great!</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let tabletCart = [];
+const sessionId = "{{ session.id }}";
+
+function addToTabletCart(id, name, price) {
+    const existing = tabletCart.find(item => item.id === id);
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        tabletCart.push({ id: id, name: name, price: parseFloat(price), quantity: 1 });
+    }
+    renderTabletCart();
+}
+
+function renderTabletCart() {
+    const container = document.getElementById('tabletCartItems');
+    const totalEl = document.getElementById('tabletTotal');
+    const btn = document.getElementById('btnSendToKitchen');
+    
+    if (tabletCart.length === 0) {
+        container.innerHTML = '<div class="text-center py-5 text-muted empty-msg"><p>Select items to order</p></div>';
+        totalEl.innerText = "IDR 0";
+        btn.disabled = true;
+        return;
+    }
+
+    btn.disabled = false;
+    let html = '';
+    let total = 0;
+
+    tabletCart.forEach((item, index) => {
+        html += `
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">${item.name}</h6>
+                    <small class="text-muted">IDR ${item.price} x ${item.quantity}</small>
+                </div>
+                <div>
+                    <button class="btn btn-sm btn-outline-danger border-0" onclick="removeFromTabletCart(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>`;
+        total += (item.price * item.quantity);
+    });
+
+    container.innerHTML = html;
+    totalEl.innerText = "IDR " + total.toLocaleString();
+}
+
+function removeFromTabletCart(index) {
+    tabletCart.splice(index, 1);
+    renderTabletCart();
+}
+
+function sendToKitchen() {
+    fetch(`/karaoke/room-order/${sessionId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ items: tabletCart })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            tabletCart = [];
+            renderTabletCart();
+            var myModal = new bootstrap.Modal(document.getElementById('successModal'));
+            myModal.show();
+        }
+    });
+}
+
+// Simple timer to show remaining time
+const endTime = new Date("{{ session.end_time|date:'Y-m-d H:i:s' }}").getTime();
+function updateTabletTimer() {
+    const now = new Date().getTime();
+    const diff = endTime - now;
+    if (diff < 0) {
+        document.getElementById('tabletTimer').innerText = "TIME EXPIRED";
+        return;
+    }
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+    document.getElementById('tabletTimer').innerText = mins + "m " + secs + "s left";
+}
+setInterval(updateTabletTimer, 1000);
+</script>
+
+<style>
+    .product-card { cursor: pointer; transition: 0.2s; }
+    .product-card:active { transform: scale(0.95); }
+    .badge { font-family: monospace; }
+</style>
+{% endblock %}

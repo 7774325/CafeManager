@@ -1,0 +1,129 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">{{ room.name }}</h3>
+            <span class="badge bg-danger">LIVE</span>
+        </div>
+        <div class="card-body">
+            <div class="row text-center mb-4">
+                <div class="col-md-4">
+                    <p class="text-muted mb-0">Started</p>
+                    <h4 id="start-time">{{ session.start_time|date:"H:i" }}</h4>
+                </div>
+                <div class="col-md-4">
+                    <p class="text-muted mb-0">Duration</p>
+                    <h4 id="live-duration">{{ duration_minutes }} Mins</h4>
+                </div>
+                <div class="col-md-4">
+                    <p class="text-muted mb-0">Room Charge</p>
+                    <h4 class="text-success">$<span id="live-cost">{{ current_cost }}</span></h4>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-lg flex-grow-1" data-bs-toggle="modal" data-bs-target="#orderModal">
+                    <i class="bi bi-plus-circle"></i> Add Food/Drinks
+                </button>
+                <a href="{% url 'end_session' session.id %}" class="btn btn-outline-danger btn-lg" onclick="return confirm('End session and generate bill?')">
+                    <i class="bi bi-stop-circle"></i> End Session
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <h4>Current Room Orders</h4>
+    <table class="table table-hover bg-white rounded shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order_items %}
+            <tr>
+                <td>{{ item.menu_item.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>${{ item.price_at_time }}</td>
+                <td>${{ item.get_total }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted">No items ordered yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{% url 'add_to_session_order' session.id %}" method="POST">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Add to Room Bill</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Item</label>
+                        <select name="item_id" class="form-select" required>
+                            {% for item in menu_items %}
+                            <option value="{{ item.id }}">{{ item.name }} - ${{ item.price }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Quantity</label>
+                        <input type="number" name="quantity" value="1" min="1" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Add to Bill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Live Timer Logic
+    const startTime = new Date("{{ session.start_time|date:'Y-m-d H:i:s' }}");
+    const hourlyRate = {{ room.hourly_rate }};
+
+    function updateTimer() {
+        const now = new Date();
+        const diffMs = now - startTime;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = diffMs / 3600000;
+        
+        document.getElementById('live-duration').innerText = diffMins + " Mins";
+        document.getElementById('live-cost').innerText = (diffHours * hourlyRate).toFixed(2);
+    }
+
+    setInterval(updateTimer, 30000); // Update every 30 seconds
+</script>
+<script>
+    const startStr = "{{ session.start_time|date:'Y-m-d H:i:s' }}";
+    const rate = {{ room.hourly_rate }};
+
+    function updateLiveValues() {
+        const start = new Date(startStr);
+        const now = new Date();
+        const diffMs = now - start;
+        
+        const mins = Math.floor(diffMs / 60000);
+        const hours = diffMs / 3600000;
+        
+        document.getElementById('live-duration').innerText = mins + " Mins";
+        document.getElementById('live-cost').innerText = (hours * rate).toFixed(2);
+    }
+
+    // Run every second for a smooth clock feel
+    setInterval(updateLiveValues, 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Your Session | Chillo Kay</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0f0f0f; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover; background-position: center; padding: 100px 0; text-align: center;
+        }
+        .card { background: #1a1a1a; border: 1px solid #333; color: white; }
+        .btn-primary { background: #00d2ff; border: none; font-weight: bold; }
+        .btn-primary:hover { background: #0099cc; }
+        .room-badge { position: absolute; top: 10px; right: 10px; background: rgba(0, 210, 255, 0.9); padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; }
+        .review-star { color: #ffcc00; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-info" href="#">CHILLO KAY</a>
+    </div>
+</nav>
+
+<header class="hero-section">
+    <div class="container">
+        <h1 class="display-3 fw-bold">Sing Your Heart Out</h1>
+        <p class="lead text-light">Private Rooms • Premium Sound • Best Vibes in Town</p>
+        <a href="#book-now" class="btn btn-primary btn-lg px-5 mt-3">BOOK A ROOM</a>
+    </div>
+</header>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-7">
+            <h3 class="mb-4">Our Experience</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card h-100 overflow-hidden position-relative">
+                        <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=2069&auto=format&fit=crop" class="card-img-top" alt="VIP">
+                        <span class="room-badge">VIP ROOM</span>
+                        <div class="card-body">
+                            <h6>Premium VIP Suite</h6>
+                            <p class="small text-muted">Up to 15 people. Dedicated service & 85" Screen.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 overflow-hidden position-relative">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop" class="card-img-top" alt="Standard">
+                        <span class="room-badge">STANDARD</span>
+                        <div class="card-body">
+                            <h6>Standard Party Room</h6>
+                            <p class="small text-muted">Up to 6 people. High-quality JBL Sound.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mt-5 mb-3">Customer Reviews</h4>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="mb-1">
+                        <i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i>
+                    </div>
+                    <p class="mb-0 italic text-light">"Best sound system in the city! The VIP room felt so exclusive."</p>
+                    <small class="text-muted">- Adam R.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5" id="book-now">
+            <div class="card shadow-lg sticky-top" style="top: 20px;">
+                <div class="card-body p-4">
+                    <h3 class="text-center text-info mb-4">Request a Booking</h3>
+                    <form action="{% url 'submit_booking_request' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="customer_name" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" name="phone_number" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date</label>
+                                <input type="date" name="requested_date" class="form-control bg-dark text-white border-secondary" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Time</label>
+                                <input type="time" name="requested_time" class="form-control bg-dark text-white border-secondary" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Duration</label>
+                            <select name="duration" class="form-select bg-dark text-white border-secondary">
+                                <option value="60">1 Hour</option>
+                                <option value="120">2 Hours</option>
+                                <option value="180">3 Hours</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-3">SUBMIT REQUEST</button>
+                    </form>
+                    <p class="small text-center text-muted mt-3">Submitting does not guarantee a slot. Sita will confirm via phone.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="py-4 text-center border-top border-secondary mt-5">
+    <p class="text-muted">&copy; 2025 Chillo Kay Karaoke. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

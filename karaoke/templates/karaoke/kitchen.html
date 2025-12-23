@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-uppercase tracking-wider">Kitchen Display System</h2>
+            <p class="text-muted">Active orders pending preparation and service.</p>
+        </div>
+        <div class="text-end">
+            <h5 id="clock" class="fw-bold mb-0"></h5>
+            <span class="badge bg-danger animate-pulse">LIVE MONITOR ACTIVE</span>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row g-4">
+        {% for order in orders %}
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header {% if order.created_at|timesince > '15 minutes' %}bg-danger{% else %}bg-dark{% endif %} text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">{{ order.session.room_name }}</h5>
+                        <span class="small opacity-75">{{ order.created_at|time:"H:i" }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted text-uppercase fw-bold">Customer: {{ order.session.customer_name }}</small>
+                    </div>
+                    
+                    <ul class="list-group list-group-flush mb-4">
+                        {% for item in order.items.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-light">
+                            <span class="fs-5 fw-bold">
+                                <span class="text-primary me-2">{{ item.quantity }}x</span> {{ item.product.name }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="d-grid gap-2">
+                        <form method="POST" action="{% url 'complete_order' order.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold shadow-sm">
+                                <i class="fas fa-check-circle me-2"></i> MARK AS SERVED
+                            </button>
+                        </form>
+
+                        {% if user.is_superuser %}
+                        <form method="POST" action="{% url 'void_order' order.id %}" onsubmit="return confirm('Are you sure you want to VOID this order? This will remove it from the bill.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="fas fa-trash-alt me-1"></i> Void Order (Manager Only)
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0 py-2">
+                    <small class="text-muted">Waiting for: {{ order.created_at|timesince }}</small>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="py-5">
+                <i class="fas fa-utensils fa-4x text-light mb-3"></i>
+                <h3 class="text-muted">No pending orders.</h3>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .animate-pulse {
+        animation: pulse-red 2s infinite;
+    }
+    @keyframes pulse-red {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+</style>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Auto-refresh every 30 seconds
+    setTimeout(function(){
+       window.location.reload();
+    }, 30000);
+</script>
+{% endblock %}

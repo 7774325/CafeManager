@@ -1,0 +1,199 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<style>
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 12px;
+    }
+    .product-card {
+        border: 1px solid #e3e6f0;
+        border-radius: 12px;
+        background: white;
+        cursor: pointer;
+        transition: transform 0.15s ease, border-color 0.2s;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .product-card:active { transform: scale(0.95); }
+    .product-card:hover { border-color: #4e73df; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    
+    .sidebar-pos {
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        background: white;
+        border-left: 1px solid #e3e6f0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    @media (max-width: 768px) {
+        .sidebar-pos { height: auto; position: static; border-left: 0; border-top: 2px solid #e3e6f0; }
+    }
+</style>
+
+<div class="container-fluid g-0">
+    <div class="row g-0">
+        <div class="col-lg-8 p-3 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="btn-group shadow-sm">
+                    <button class="btn btn-primary fw-bold" onclick="showTab('menu')">MENU</button>
+                    <button class="btn btn-outline-primary fw-bold" onclick="showTab('tickets')">
+                        TICKETS ({{ open_tickets.count }})
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-menu" class="product-grid">
+                {% for p in products %}
+                <div class="product-card p-3 text-center shadow-sm" onclick="addToCart('{{ p.id }}', '{{ p.name }}', '{{ p.selling_price }}')">
+                    <div class="fw-bold text-dark small">{{ p.name }}</div>
+                    <div class="text-primary fw-bold mt-1">${{ p.selling_price|floatformat:2 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div id="tab-tickets" class="row g-3 d-none">
+                {% for t in open_tickets %}
+                <div class="col-md-6 col-xl-4">
+                    <div class="card shadow-sm border-start border-warning border-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold">{{ t.table_name }}</h6>
+                            <p class="text-muted small mb-2">Total: ${{ t.total_amount|floatformat:2 }}</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-sm btn-primary" onclick="loadTicket('{{ t.id }}', '{{ t.table_name }}')">EDIT</button>
+                                <button class="btn btn-sm btn-success" onclick="quickCharge('{{ t.id }}', '{{ t.table_name }}')">PAY</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted mt-5">No pending tickets.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4 sidebar-pos shadow">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-primary">Current Order</h5>
+                <button class="btn btn-sm btn-outline-danger" onclick="clearCart()">RESET</button>
+            </div>
+
+            <div class="flex-grow-1 p-3 overflow-auto" id="cart-list">
+                </div>
+
+            <div class="p-3 bg-light border-top">
+                <form method="post" id="pos-main-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="cart_data" id="hiddenCart">
+                    <input type="hidden" name="existing_ticket_id" id="hiddenTicketId">
+                    <input type="hidden" name="action" id="hiddenAction" value="SAVE">
+                    <input type="hidden" name="payment_method" id="hiddenPayment" value="CASH">
+
+                    <div class="mb-3">
+                        <label class="small fw-bold text-muted text-uppercase">Table / Name</label>
+                        <input type="text" name="table_name" id="tableNameInput" class="form-control" required placeholder="Table 01">
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="h5 mb-0 text-muted">Total Due</span>
+                        <span class="h2 mb-0 fw-bold text-primary" id="total-display">$0.00</span>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-dark w-100 py-3 fw-bold" onclick="submitForm('SAVE')">SAVE</button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-primary w-100 py-3 fw-bold" onclick="openPaymentModal()">PAY</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="payModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">Select Payment</h5>
+            </div>
+            <div class="modal-body p-4">
+                <div class="d-grid gap-3">
+                    <button class="btn btn-outline-dark btn-lg py-3 fw-bold" onclick="finalize('CASH')"><i class="fas fa-money-bill-wave me-2"></i> CASH</button>
+                    <button class="btn btn-outline-primary btn-lg py-3 fw-bold" onclick="finalize('CARD')"><i class="fas fa-credit-card me-2"></i> CARD</button>
+                    <button class="btn btn-outline-info btn-lg py-3 fw-bold" onclick="finalize('TRANSFER')"><i class="fas fa-university me-2"></i> TRANSFER</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = {};
+    const payModal = new bootstrap.Modal(document.getElementById('payModal'));
+
+    function showTab(tab) {
+        document.getElementById('tab-menu').classList.toggle('d-none', tab !== 'menu');
+        document.getElementById('tab-tickets').classList.toggle('d-none', tab !== 'tickets');
+    }
+
+    function addToCart(id, name, price) {
+        if (cart[id]) { cart[id].qty++; } 
+        else { cart[id] = { name: name, price: parseFloat(price), qty: 1 }; }
+        updateUI();
+    }
+
+    function updateUI() {
+        const list = document.getElementById('cart-list');
+        list.innerHTML = '';
+        let total = 0;
+        
+        Object.keys(cart).forEach(id => {
+            let item = cart[id];
+            total += (item.qty * item.price);
+            list.innerHTML += `
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>
+                        <div class="fw-bold small text-dark">${item.name}</div>
+                        <small class="text-muted">${item.qty} x $${item.price.toFixed(2)}</small>
+                    </div>
+                    <div class="fw-bold text-primary">$${(item.qty * item.price).toFixed(2)}</div>
+                </div>`;
+        });
+        
+        document.getElementById('total-display').innerText = '$' + total.toFixed(2);
+        document.getElementById('hiddenCart').value = JSON.stringify(cart);
+    }
+
+    function openPaymentModal() {
+        if (Object.keys(cart).length === 0) return alert("Cart is empty!");
+        payModal.show();
+    }
+
+    function finalize(method) {
+        document.getElementById('hiddenPayment').value = method;
+        submitForm('PAY');
+    }
+
+    function submitForm(action) {
+        document.getElementById('hiddenAction').value = action;
+        document.getElementById('pos-main-form').submit();
+    }
+
+    function clearCart() {
+        if(confirm("Clear order?")) {
+            cart = {};
+            document.getElementById('hiddenTicketId').value = '';
+            document.getElementById('tableNameInput').value = '';
+            updateUI();
+        }
+    }
+</script>
+{% endblock %}

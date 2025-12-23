@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Session History</h2>
+        <div class="col-md-4">
+            <form method="get" class="d-flex shadow-sm rounded-pill overflow-hidden bg-white border">
+                <input type="text" name="q" class="form-control border-0 px-4 py-2" placeholder="Search customer or date..." value="{{ query|default:'' }}">
+                <button type="submit" class="btn btn-primary px-4"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Date</th>
+                        <th>Customer</th>
+                        <th>Room</th>
+                        <th>Duration</th>
+                        <th>Total Amount</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in sessions %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold">{{ session.start_time|date:"d M Y" }}</div>
+                            <div class="text-muted small">{{ session.start_time|date:"H:i" }}</div>
+                        </td>
+                        <td>{{ session.customer_name }}</td>
+                        <td><span class="badge bg-info bg-opacity-10 text-info">{{ session.room.name }}</span></td>
+                        <td>{{ session.duration_hours }} hrs {{ session.duration_minutes }} mins</td>
+                        <td class="fw-bold text-success">MVR {{ session.total_amount }}</td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'session_receipt' session.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                <i class="bi bi-receipt me-1"></i> Receipt
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">No completed sessions found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

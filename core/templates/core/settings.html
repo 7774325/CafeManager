@@ -1,0 +1,124 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary fw-bold mb-0"><i class="fas fa-user-shield me-2"></i>Management Console</h2>
+            <p class="text-muted">Configure outlet operations and karaoke rates for <strong>{{ outlet.name }}</strong></p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row g-4">
+            
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-microphone-alt me-2"></i>Karaoke Room Rates</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small mb-4">Set the hourly rate for each room. These rates are used to calculate the final bill at checkout.</p>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Room Name</th>
+                                        <th style="width: 200px;">Hourly Rate ($/hr)</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for room in karaoke_rooms %}
+                                    <tr>
+                                        <td class="fw-bold">{{ room.name }}</td>
+                                        <td>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" name="room_rate_{{ room.id }}" 
+                                                       class="form-control" value="{{ room.hourly_rate }}">
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            {% if room.is_active %}
+                                                <span class="badge bg-success-soft text-success px-3">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger-soft text-danger px-3">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4 text-muted">
+                                            <i class="fas fa-info-circle me-1"></i> No Karaoke rooms found. 
+                                            Contact Admin to add rooms.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-percentage me-2"></i>Global Charges</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase">Service Charge (%)</label>
+                            <input type="number" step="0.1" name="service_charge" class="form-control form-control-lg" value="0.0">
+                            <div class="form-text text-muted">Applied to all karaoke sessions.</div>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase">GST / Tax Rate (%)</label>
+                            <input type="number" step="0.1" name="tax_rate" class="form-control form-control-lg" value="0.0">
+                            <div class="form-text text-muted">Government tax percentage.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="mb-0 text-muted small fw-bold text-uppercase">Product Price Reference</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+                            {% for p in products %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center small py-2">
+                                <span>{{ p.name }}</span>
+                                <span class="fw-bold">${{ p.selling_price }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white py-2">
+                        <p class="mb-0 x-small text-center text-muted italic">Note: Product prices must be managed in Back-Office.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+            <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow-sm">
+                <i class="fas fa-save me-2"></i>SAVE ALL CONFIGURATIONS
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .bg-success-soft { background-color: #e8f5e9; }
+    .bg-danger-soft { background-color: #ffebee; }
+    .x-small { font-size: 0.75rem; }
+</style>
+{% endblock %}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChillOkay Karaoke Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .sidebar { min-width: 250px; max-width: 250px; min-height: 100vh; background: #212529; color: white; transition: all 0.3s; }
+        .sidebar .nav-link { color: rgba(255,255,255,0.8); border-radius: 5px; margin: 5px 15px; padding: 10px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .main-content { width: 100%; }
+        .dropdown-menu { border: none; shadow: 0 0.5rem 1rem rgba(0,0,0,0.15); }
+    </style>
+</head>
+<body class="d-flex">
+
+    <nav class="sidebar d-flex flex-column p-3">
+        <a href="{% url 'dashboard' %}" class="d-flex align-items-center mb-4 me-md-auto text-white text-decoration-none px-3">
+            <i class="fas fa-microphone-alt fa-2x me-2 text-danger"></i>
+            <span class="fs-4 fw-bold">ChillOkay</span>
+        </a>
+
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-line me-2"></i> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'karaoke_list' %}" class="nav-link {% if request.resolver_match.url_name == 'karaoke_list' %}active{% endif %}">
+                    <i class="fas fa-door-open me-2"></i> Room Sessions
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'record_sale' %}" class="nav-link {% if request.resolver_match.url_name == 'record_sale' %}active{% endif %}">
+                    <i class="fas fa-cash-register me-2"></i> Counter POS
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'kitchen_view' %}" class="nav-link {% if request.resolver_match.url_name == 'kitchen_view' %}active{% endif %}">
+                    <i class="fas fa-utensils me-2"></i> Kitchen View
+                </a>
+            </li>
+
+            <li class="nav-item dropdown mt-4 px-3">
+                <a class="btn btn-outline-light dropdown-toggle w-100 text-start border-secondary" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-tools me-2 text-warning"></i> Staff Portal
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark w-100 shadow">
+                    <li><h6 class="dropdown-header">Monitoring</h6></li>
+                    <li><a class="dropdown-item" href="/karaoke/monitor/"><i class="fas fa-desktop me-2"></i> Live Monitor</a></li>
+                    <li><a class="dropdown-item" href="/karaoke/summary/"><i class="fas fa-file-invoice-dollar me-2"></i> Daily Summary</a></li>
+                    
+                    <li><hr class="dropdown-divider border-secondary"></li>
+                    <li><h6 class="dropdown-header">Databases</h6></li>
+                    <li><a class="dropdown-item" href="{% url 'customer_list' %}"><i class="fas fa-users me-2"></i> Customer Directory</a></li>
+                    <li><a class="dropdown-item" href="{% url 'sales_history' %}"><i class="fas fa-history me-2"></i> Sales History</a></li>
+                    <li><a class="dropdown-item" href="{% url 'low_stock_report' %}"><i class="fas fa-exclamation-triangle me-2"></i> Stock Alerts</a></li>
+                    
+                    <li><hr class="dropdown-divider border-secondary"></li>
+                    <li><h6 class="dropdown-header">Public Site</h6></li>
+                    <li><a class="dropdown-item text-info" href="{% url 'booking_landing' %}" target="_blank">
+                        <i class="fas fa-external-link-alt me-2"></i> Open Booking Site
+                    </a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <hr>
+        <div class="dropdown px-3">
+            <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-user-circle fa-lg me-2"></i>
+                <strong>{{ request.user.username }}</strong>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                <li><a class="dropdown-item" href="/admin/">Admin Panel</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout/">Sign out</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show m-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

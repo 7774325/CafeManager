@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">Transaction History</h3>
+        <div class="d-flex gap-2">
+            <input type="text" id="historySearch" class="form-control" placeholder="Search customer or receipt..." onkeyup="filterHistory()">
+            <a href="{% url 'record_sale' %}" class="btn btn-primary">New Sale</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="historyTable">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Date/Time</th>
+                        <th>Type</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in transactions %}
+                    <tr class="history-row">
+                        <td>
+                            <div class="fw-bold">{{ item.date|date:"d M Y" }}</div>
+                            <small class="text-muted">{{ item.date|date:"H:i" }}</small>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill {% if item.type == 'Sale' %}bg-info text-dark{% else %}bg-success{% endif %}">
+                                {{ item.type }}
+                            </span>
+                        </td>
+                        <td class="customer-name">
+                            {% if item.type == 'Sale' %}
+                                {{ item.customer.name|default:"Guest" }}
+                            {% else %}
+                                {{ item.customer.name }} <small class="text-muted">(Credit Cleared)</small>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">MVR {{ item.total_amount }}</td>
+                        <td class="text-end">
+                            {% if item.type == 'Sale' %}
+                                <a href="{% url 'receipt_detail' item.id %}" class="btn btn-sm btn-outline-primary">View Receipt</a>
+                            {% else %}
+                                <span class="badge bg-light text-muted border">Payment Log</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+function filterHistory() {
+    let input = document.getElementById('historySearch').value.toUpperCase();
+    let rows = document.getElementsByClassName('history-row');
+    
+    for (let i = 0; i < rows.length; i++) {
+        let text = rows[i].innerText.toUpperCase();
+        rows[i].style.display = text.includes(input) ? "" : "none";
+    }
+}
+</script>
+{% endblock %}

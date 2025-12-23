@@ -1,0 +1,31 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-5 bg-dark min-vh-100">
+    <div class="text-center mb-5">
+        <h1 class="display-3 fw-bold text-white">KARAOKE LIVE STATUS</h1>
+        <p class="text-info fs-4">Find your room and start singing!</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        {% for room in rooms %}
+        <div class="col-md-4 col-lg-3">
+            <div class="card h-100 text-center border-0 shadow-lg {% if room.current_session %}bg-danger text-white{% else %}bg-success text-white{% endif %}">
+                <div class="card-body py-5">
+                    <i class="fas fa-microphone-alt fa-3x mb-3"></i>
+                    <h2 class="card-title mb-3 fw-bold">{{ room.name }}</h2>
+                    <hr class="bg-white">
+                    {% if room.current_session %}
+                        <div class="display-6 fw-bold">OCCUPIED</div>
+                        <p class="mt-2 opacity-75 small">Session in progress</p>
+                    {% else %}
+                        <div class="display-6 fw-bold">VACANT</div>
+                        <p class="mt-2 opacity-75 small">Ready for booking</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 fw-bold">Customer Directory</h2>
+            <p class="text-muted">Manage loyalty, track visit counts, and view service preferences.</p>
+        </div>
+        <div>
+            <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+                <i class="fas fa-plus me-2"></i> Register New Customer
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-white shadow-sm border-0 p-3 h-100">
+                <small class="text-uppercase text-muted fw-bold">Total Database</small>
+                <h3 class="fw-bold mb-0 text-dark">{{ customers.count }} Profiles</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow-sm border-0 p-3 h-100">
+                <small class="text-uppercase fw-bold opacity-75">Loyalty Status</small>
+                <h3 class="fw-bold mb-0">
+                    Active Tracking
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Customer Name</th>
+                            <th>Phone</th>
+                            <th class="text-center">Visits</th>
+                            <th>Food Preferences / Staff Notes</th>
+                            <th>Credit Balance</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td class="ps-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <span class="fw-bold">{{ customer.name|slice:":1"|upper }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="fw-bold d-block text-dark">{{ customer.name }}</span>
+                                        {% if customer.visit_count >= 15 %}
+                                            <span class="badge bg-warning text-dark small">VIP Gold</span>
+                                        {% elif customer.visit_count >= 5 %}
+                                            <span class="badge bg-info text-white small">Regular</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ customer.phone|default:"---" }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border rounded-pill px-3">
+                                    {{ customer.visit_count }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-muted small" style="max-width: 300px;">
+                                    {% if customer.notes %}
+                                        <i class="fas fa-comment-dots me-1 text-primary"></i> {{ customer.notes }}
+                                    {% else %}
+                                        <span class="text-muted fst-italic">No preferences recorded.</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="{% if customer.current_balance > 0 %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                    MVR {{ customer.current_balance }}
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a href="{% url 'customer_history' customer.id %}" class="btn btn-sm btn-outline-secondary me-2">
+                                    <i class="fas fa-history me-1"></i> History
+                                </a>
+                                <button class="btn btn-sm btn-light border">Edit</button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-users fa-3x mb-3 opacity-25"></i>
+                                    <p>No customers registered yet. Start by billing someone in the POS!</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">Register New Customer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Full Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. Shiyama">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" placeholder="e.g. 7771234">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Initial Notes</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Food allergies or room preferences..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary px-4">Save Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

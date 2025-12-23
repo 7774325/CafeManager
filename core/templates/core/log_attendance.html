@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <p>
+            <label for="{{ form.check_in_time.id_for_label }}">Check In Time:</label>
+            {{ form.check_in_time }}
+            <small>{{ form.check_in_time.help_text }}</small>
+        </p>
+        <p>
+            <label for="{{ form.check_out_time.id_for_label }}">Check Out Time:</label>
+            {{ form.check_out_time }}
+            <small>{{ form.check_out_time.help_text }}</small>
+        </p>
+        
+        <button type="submit">Log Attendance</button>
+    </form>
+
+{% endblock %}

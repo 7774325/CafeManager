@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h4 class="mb-0 fw-bold">Counter POS</h4>
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" id="productSearch" class="form-control" placeholder="Search menu items...">
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="height: 75vh; overflow-y: auto;">
+                    <div class="row g-3" id="productGrid">
+                        {% for product in products %}
+                        <div class="col-md-3 product-card" data-name="{{ product.name|lower }}">
+                            <div class="card h-100 border text-center p-2 shadow-sm" 
+                                 onclick="addToCart('{{ product.id }}', '{{ product.name }}', '{{ product.selling_price }}')"
+                                 style="cursor: pointer;">
+                                <div class="fw-bold mb-1 small">{{ product.name }}</div>
+                                <div class="text-success fw-bold">MVR {{ product.selling_price }}</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">Stock: {{ product.current_stock_level }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-dark text-white py-3 d-flex justify-content-between">
+                    <h5 class="mb-0">Current Order</h5>
+                    <button class="btn btn-sm btn-outline-light" onclick="clearCart()">Clear</button>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    
+                    <div class="bg-light p-3 rounded mb-3">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase">1. Select Customer</label>
+                            <select id="customerSelect" class="form-select">
+                                <option value="">-- Walk-in / Guest --</option>
+                                {% for customer in customers %}
+                                <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label small fw-bold text-uppercase">2. Table / Room Allocation</label>
+                            <select id="tableSelect" class="form-select border-warning">
+                                <option value="Counter">Take-away / Counter</option>
+                                <optgroup label="Main Hall">
+                                    <option value="Table 1">Table 1</option>
+                                    <option value="Table 2">Table 2</option>
+                                    <option value="Table 3">Table 3</option>
+                                    <option value="Table 4">Table 4</option>
+                                </optgroup>
+                                <optgroup label="Karaoke Rooms">
+                                    <option value="VIP A">VIP Room A</option>
+                                    <option value="VIP B">VIP Room B</option>
+                                    <option value="Room 1">Standard 1</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="cartItems" class="flex-grow-1 overflow-auto mb-3" style="max-height: 35vh;">
+                        <p class="text-center text-muted py-5">No items selected.</p>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="h5">Total:</span>
+                            <span class="h4 fw-bold text-success">MVR <span id="totalPrice">0.00</span></span>
+                        </div>
+                        
+                        <div class="row g-2 mb-3">
+                            <div class="col-12">
+                                <label class="small fw-bold">Payment Method</label>
+                                <select id="paymentMethod" class="form-select bg-light">
+                                    <option value="Cash">Cash</option>
+                                    <option value="Transfer">Bank Transfer</option>
+                                    <option value="Card">Card</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="submitBtn" onclick="submitSale()" class="btn btn-success btn-lg w-100 py-3 shadow-sm fw-bold">
+                            SUBMIT & PRINT
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+
+    function addToCart(id, name, price) {
+        const existing = cart.find(item => item.id === id);
+        if (existing) {
+            existing.quantity += 1;
+        } else {
+            cart.push({ id, name, price: parseFloat(price), quantity: 1 });
+        }
+        renderCart();
+    }
+
+    function clearCart() { cart = []; renderCart(); }
+
+    function renderCart() {
+        const cartDiv = document.getElementById('cartItems');
+        const totalSpan = document.getElementById('totalPrice');
+        
+        if (cart.length === 0) {
+            cartDiv.innerHTML = '<p class="text-center text-muted py-5">No items selected.</p>';
+            totalSpan.innerText = '0.00';
+            return;
+        }
+
+        let html = '<div class="list-group list-group-flush">';
+        let total = 0;
+        cart.forEach(item => {
+            total += (item.price * item.quantity);
+            html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div><span class="fw-bold">${item.name}</span><br><small class="text-muted">${item.quantity} x MVR ${item.price}</small></div>
+                    <span class="fw-bold">MVR ${(item.price * item.quantity).toFixed(2)}</span>
+                </div>`;
+        });
+        html += '</div>';
+        cartDiv.innerHTML = html;
+        totalSpan.innerText = total.toFixed(2);
+    }
+
+    async function submitSale() {
+        if (cart.length === 0) return alert("Please add items first.");
+        
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+
+        const data = {
+            customer_id: document.getElementById('customerSelect').value,
+            table_number: document.getElementById('tableSelect').value,
+            payment_method: document.getElementById('paymentMethod').value,
+            total_price: document.getElementById('totalPrice').innerText,
+            items: cart
+        };
+
+        try {
+            const response = await fetch('/karaoke/submit-sale/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert("Sale Recorded for " + data.table_number);
+                location.reload();
+            }
+        } catch (e) {
+            alert("Connection error.");
+            btn.disabled = false;
+            btn.innerText = "SUBMIT & PRINT";
+        }
+    }
+
+    document.getElementById('productSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.style.display = card.dataset.name.includes(term) ? 'block' : 'none';
+        });
+    });
+</script>
+{% endblock %}

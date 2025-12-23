@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Karaoke Rooms</h2>
+            <p class="text-muted">Monitor and manage active singing sessions</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary rounded-pill px-3 py-2">
+                <i class="bi bi-clock me-1"></i> Live Status
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for room in rooms %}
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 15px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="bg-light p-3 rounded-3">
+                            <i class="bi bi-mic-fill fs-3 {% if room.is_occupied %}text-danger{% else %}text-success{% endif %}"></i>
+                        </div>
+                        {% if room.is_occupied %}
+                            <span class="badge bg-danger">Occupied</span>
+                        {% else %}
+                            <span class="badge bg-success">Available</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h4 class="fw-bold">{{ room.name }}</h4>
+                    <p class="text-muted small">Rate: MVR {{ room.hourly_rate }}/hr</p>
+
+                    <hr class="my-3 opacity-25">
+
+                    {% if room.is_occupied %}
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Current Session:</small>
+                            <span class="fw-bold text-dark">{{ room.current_session.customer_name }}</span>
+                        </div>
+                        <a href="{% url 'manage_session' room.id %}" class="btn btn-outline-primary w-100 py-2 fw-bold">
+                            <i class="bi bi-gear-wide-connected me-2"></i> Manage Session
+                        </a>
+                    {% else %}
+                        <p class="small text-muted mb-4">No active session. Ready for check-in.</p>
+                        <a href="{% url 'start_session' room.id %}" class="btn btn-primary w-100 py-2 fw-bold">
+                            <i class="bi bi-play-fill me-2"></i> Start New Session
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="bg-white p-5 rounded-4 shadow-sm d-inline-block">
+                <i class="bi bi-plus-circle text-muted display-1"></i>
+                <h4 class="mt-3">No Rooms Found</h4>
+                <p class="text-muted">Add your rooms in the Django Admin to get started.</p>
+                <a href="/admin/karaoke/room/add/" class="btn btn-primary px-4">Add First Room</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

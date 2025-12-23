@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+
+{% block header_title %}Session Receipt{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white" id="printable-receipt">
+                <div class="card-header bg-dark text-white text-center py-4">
+                    <h3 class="fw-bold mb-0">{{ session.outlet.name }}</h3>
+                    <p class="small mb-0 opacity-75">Official Receipt</p>
+                </div>
+                
+                <div class="card-body p-4 text-center">
+                    <div class="mb-4">
+                        <p class="mb-0 text-muted small">Customer</p>
+                        <h5 class="fw-bold">{{ session.customer_name|default:"Walk-in Customer" }}</h5>
+                        <p class="text-muted" style="font-size: 0.8rem;">{{ session.end_time|date:"d M Y | H:i" }}</p>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-borderless table-sm">
+                            <thead class="border-bottom">
+                                <tr>
+                                    <th class="text-start small">Item</th>
+                                    <th class="text-end small">USD</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-start">Room Usage ({{ session.room.name }})</td>
+                                    <td class="text-end">${{ session.total_price|floatformat:2 }}</td>
+                                </tr>
+                                {% for item in order_items %}
+                                <tr>
+                                    <td class="text-start">{{ item.quantity }} x {{ item.menu_item.name }}</td>
+                                    <td class="text-end">${{ item.price_at_time|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="py-3 border-top border-bottom bg-light rounded-3">
+                        <h6 class="text-muted text-uppercase small mb-1">Total Payable</h6>
+                        <h1 class="fw-bold text-primary mb-0">
+                            {{ currency_symbol }} {{ display_total|floatformat:2 }}
+                        </h1>
+                        <span class="badge bg-secondary-subtle text-secondary rounded-pill mt-2">
+                            Equivalent to: {{ secondary_symbol }} {{ secondary_total|floatformat:2 }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 text-center pb-4">
+                    <p class="small text-muted">Thank you for choosing {{ session.outlet.name }}!</p>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 mt-4 p-4 bg-white no-print">
+                <p class="fw-bold text-center mb-3">Share Digital Receipt</p>
+                <div class="d-flex justify-content-center gap-4">
+                    <a href="https://wa.me/{{ session.customer_phone }}?text={{ share_text|urlencode }}" target="_blank" class="text-decoration-none text-center">
+                        <div class="btn btn-success rounded-circle p-0 mb-1" style="width: 50px; height: 50px; line-height: 50px;">
+                            <i class="bi bi-whatsapp fs-4"></i>
+                        </div>
+                        <div class="small text-dark">WhatsApp</div>
+                    </a>
+                    <a href="viber://forward?text={{ share_text|urlencode }}" class="text-decoration-none text-center">
+                        <div class="btn btn-primary rounded-circle p-0 mb-1" style="width: 50px; height: 50px; line-height: 50px; background-color: #7360f2; border:none;">
+                            <i class="bi bi-chat-dots fs-4"></i>
+                        </div>
+                        <div class="small text-dark">Viber</div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4 no-print">
+                <button onclick="window.print()" class="btn btn-dark rounded-pill py-3">
+                    <i class="bi bi-printer me-2"></i>Print Physical Bill
+                </button>
+                <a href="{% url 'karaoke_list' %}" class="btn btn-link text-muted text-decoration-none text-center">Return to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print { .no-print { display: none !important; } .card { box-shadow: none !important; border: 1px solid #eee !important; } }
+</style>
+{% endblock %}

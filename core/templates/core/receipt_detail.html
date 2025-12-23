@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 p-4" id="receipt-card">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold mb-0">CHILLO CAFE</h2>
+                    <p class="text-muted small mb-0">{{ transaction.outlet.name }}</p>
+                    <p class="text-muted small">{{ transaction.outlet.location }}</p>
+                </div>
+
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Receipt #: {{ transaction.id }}</span>
+                    <span>{{ transaction.date|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Table: {{ transaction.table_number|default:"N/A" }}</span>
+                </div>
+                <div class="d-flex justify-content-between small mb-3 border-bottom pb-2">
+                    <span>Customer: {{ transaction.customer.name|default:"Guest" }}</span>
+                </div>
+
+                <div class="mb-3">
+                    {% for item in transaction.items.all %}
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>{{ item.quantity }} x {{ item.product.name }}</span>
+                        <span>{{ item.unit_price }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between fw-bold border-top pt-2 mb-4">
+                    <span>TOTAL</span>
+                    <span>MVR {{ transaction.total_amount }}</span>
+                </div>
+
+                <div class="text-center small">
+                    <p class="mb-1">Paid via {{ transaction.payment_method }}</p>
+                    <p class="mb-0">Thank you for visiting!</p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <p class="small fw-bold text-muted mb-2"><i class="bi bi-share me-2"></i>Send Paperless Receipt</p>
+                <div class="d-grid gap-2">
+                    {% if transaction.customer and transaction.customer.phone %}
+                        <a href="https://wa.me/{{ transaction.customer.phone }}?text=Hi%20{{ transaction.customer.name }},%20here%20is%20your%20receipt%20from%20Chillo%20Cafe.%20Total:%20MVR%20{{ transaction.total_amount }}.%20Receipt%20ID:%20%23{{ transaction.id }}" 
+                           target="_blank" 
+                           class="btn btn-success">
+                            <i class="bi bi-whatsapp me-2"></i>Send via WhatsApp
+                        </a>
+                    {% else %}
+                        <button class="btn btn-success opacity-50" onclick="alert('No phone number saved for this customer.')">
+                            <i class="bi bi-whatsapp me-2"></i>Send via WhatsApp (No Number)
+                        </button>
+                    {% endif %}
+                    
+                    <button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print Physical Copy</button>
+                    <a href="{% url 'record_sale' %}" class="btn btn-primary">New Sale</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        #sidebar, .navbar, .btn, .text-muted.small.fw-bold { display: none !important; }
+        #main-content { margin-left: 0 !important; }
+        .card { border: none !important; box-shadow: none !important; }
+    }
+</style>
+{% endblock %}

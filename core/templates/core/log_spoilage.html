@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-dumpster"></i> Log Product Spoilage</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-4">
+                        Use this form to record items that are expired, damaged, or wasted. This will automatically deduct from your current stock.
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-uppercase small">Select Product</label>
+                            <select name="product_id" class="form-select form-select-lg" required>
+                                <option value="" selected disabled>-- Choose Product --</option>
+                                {% for p in products %}
+                                    <option value="{{ p.id }}">
+                                        {{ p.name }} (Current: {{ p.current_stock_level }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-uppercase small">Quantity Wasted</label>
+                            <input type="number" name="quantity" class="form-control form-control-lg" min="1" placeholder="0" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold">
+                                CONFIRM LOG
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-light border fw-bold">
+                                CANCEL
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-3 bg-light rounded border">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i> 
+                    Logged spoilage will appear in the <strong>Stock Movements (Ledger)</strong> on the dashboard for tracking.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body { background-color: #f8f9fa; }
+    .card { border-radius: 12px; }
+    .form-select-lg, .form-control-lg { font-size: 1rem; }
+</style>
+{% endblock %}

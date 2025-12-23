@@ -1,0 +1,11 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="alert alert-warning shadow">
+        <h2 class="alert-heading">No Outlet Assigned!</h2>
+        <p>Your user account (<strong>{{ user.username }}</strong>) is not linked to any Cafe Outlet.</p>
+        <hr>
+        <p class="mb-0">Please go to the <a href="/admin/core/employee/add/" class="alert-link">Admin Panel</a> and create an <strong>Employee</strong> profile for yourself linked to <strong>CHILLO</strong>.</p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+
+{% block header_title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Management</h2>
+        <div class="d-flex gap-2">
+            <a href="{% url 'sync_menu_items' %}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
+                <i class="bi bi-arrow-repeat me-2"></i>Sync Menu from CHILLO
+            </a>
+            <button type="button" class="btn btn-success rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#addItemModal">
+                <i class="bi bi-plus-lg me-2"></i>Add New Menu Item
+            </button>
+        </div>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_all">
+
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+            <h5 class="fw-bold text-primary mb-4">Room Rates (Per Hour)</h5>
+            <div class="row g-3">
+                {% for room in rooms %}
+                <div class="col-md-4">
+                    <label class="form-label small text-muted text-uppercase fw-bold">{{ room.name }}</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-0">$</span>
+                        <input type="number" step="0.01" name="room_rate_{{ room.id }}" 
+                               class="form-control bg-light border-0" value="{{ room.hourly_rate|floatformat:2 }}">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+            <h5 class="fw-bold text-success mb-4">Menu Pricing</h5>
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle">
+                    <thead class="text-muted small text-uppercase">
+                        <tr>
+                            <th>Item Name</th>
+                            <th class="text-end" style="width: 200px;">Price ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td class="fw-bold">{{ product.name }}</td>
+                            <td>
+                                <input type="number" step="0.01" name="prod_price_{{ product.id }}" 
+                                       class="form-control bg-light border-0 text-end" value="{{ product.price|floatformat:2 }}">
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center py-4 text-muted">
+                                No menu items found. Click "Sync" or "Add New" to begin.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 shadow">Save All Changes</button>
+        </div>
+    </form>
+</div>
+
+<div class="modal fade" id="addItemModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Add New Menu Item</h5>
+                <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#addItemModal"></button>
+            </div>
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_item">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Item Name</label>
+                        <input type="text" name="new_item_name" class="form-control" placeholder="e.g. Chicken Bajiyaa" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price ($)</label>
+                        <input type="number" step="0.01" name="new_item_price" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill">Add to Menu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

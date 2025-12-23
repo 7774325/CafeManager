@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Monitor Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f4; color: #333; }
+        .dashboard-container { display: flex; max-width: 1200px; margin: 20px auto; gap: 20px; }
+        .panel { flex: 1; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #ccc; padding-bottom: 10px; }
+        .order-item, .session-item { padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        #new-orders .order-item { background-color: #ffe0b2; border: 1px solid #ff9800; }
+        .status-ready { background-color: #a5d6a7; } /* Green */
+        .status-new { background-color: #ffcc80; } /* Amber/Orange */
+        .action-btn { padding: 5px 10px; cursor: pointer; border: none; border-radius: 3px; background-color: #4CAF50; color: white; }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;"><h1>Karaoke Staff Operations Monitor</h1></div>
+
+    <div class="dashboard-container">
+        
+        <div class="panel" id="new-orders-panel">
+            <h2>New/Pending Orders (Queue)</h2>
+            <div id="new-orders-list">
+                {% for order in pending_orders %}
+                    <div class="order-item status-{{ order.status|lower }}" id="order-{{ order.id }}" 
+                         data-room-id="{{ order.booking.room.id }}" data-status="{{ order.status|lower }}">
+                        <span>
+                            **ROOM {{ order.booking.room.name }}**: {{ order.item_count }} items ({{ order.get_status_display }})
+                        </span>
+                        <button class="action-btn" 
+                                onclick="updateOrderStatus({{ order.id }}, 'Ready')">Mark Ready</button>
+                    </div>
+                {% empty %}
+                    <p id="no-new-orders-message">Queue is empty. Awaiting orders...</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="panel" id="active-sessions-panel">
+            <h2>Active Sessions</h2>
+            <ul id="active-sessions-list" style="list-style: none; padding: 0;">
+                {% for booking in active_bookings %}
+                    <li class="session-item" id="session-{{ booking.id }}" data-room-id="{{ booking.room.id }}">
+                        <span>Room {{ booking.room.name }} (Check-in: {{ booking.check_in_time|date:"H:i" }})</span>
+                        </li>
+                {% empty %}
+                    <li>No rooms currently checked in.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+
+    <script>
+        // CRITICAL: Get the list of active room IDs from Django's context
+        const active_room_ids = JSON.parse('{{ active_room_ids|safe }}');
+        const newOrdersList = document.getElementById('new-orders-list');
+        const noNewOrdersMessage = document.getElementById('no-new-orders-message');
+
+
+        // --- 1. WebSockets Connection Setup (Core Logic - Same as In-Room Display) ---
+        function connectToRoom(room_id) {
+            const socket_protocol = (window.location.protocol === 'https:') ? 'wss:' : 'ws:';
+            const room_websocket_url = `${socket_protocol}//${window.location.host}/ws/karaoke/room/${room_id}/`;
+            
+            const roomSocket = new WebSocket(room_websocket_url);
+
+            roomSocket.onopen = function(e) {
+                console.log(`Staff Monitor connected to Room ${room_id}.`);
+            };
+
+            roomSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data).data;
+                handleRealTimeUpdate(data); // Call the staff handler
+            };
+
+            roomSocket.onclose = function(e) {
+                console.warn(`WS closed for Room ${room_id}. Attempting reconnect...`);
+                setTimeout(() => connectToRoom(room_id), 3000); 
+            };
+
+            roomSocket.onerror = function(e) {
+                console.error("WebSocket Error:", e);
+            };
+
+            return roomSocket;
+        }
+
+        // --- 2. Staff Monitor Dashboard Logic (Multi-room Handler) ---
+        function handleRealTimeUpdate(data) {
+            if (data.type === 'order_update') {
+                const orderId = data.order_id;
+                const status = data.status.toLowerCase();
+                const roomId = data.room_id;
+                let existingItem = document.getElementById(`order-${orderId}`);
+
+                // Scenario 1: New Order Placed (M2)
+                if (status === 'new' && !existingItem) {
+                    // Remove the 'Queue is empty' message if it exists
+                    if (noNewOrdersMessage) {
+                        noNewOrdersMessage.remove();
+                    }
+                    
+                    // Create and insert the new order item at the top of the list
+                    const newOrderHtml = `
+                        <div class="order-item status-new" id="order-${orderId}" 
+                             data-room-id="${roomId}" data-status="new">
+                            <span>**ROOM ${roomId}**: New Order Placed (Pending)</span>
+                            <button class="action-btn" 
+                                    onclick="updateOrderStatus(${orderId}, 'Ready')">Mark Ready</button>
+                        </div>
+                    `;
+                    newOrdersList.insertAdjacentHTML('afterbegin', newOrderHtml);
+                    console.log(`Real-Time: New Order ${orderId} detected for Room ${roomId}.`);
+                } 
+                // Scenario 2: Order Status Changed (e.g., Ready, Delivered)
+                else if (existingItem) {
+                    // Update the visual status of an existing order
+                    existingItem.className = `order-item status-${status}`;
+                    existingItem.dataset.status = status;
+                    
+                    // Remove the order from the list if it's been delivered
+                    if (status === 'delivered') {
+                        existingItem.remove();
+                    }
+                    
+                    console.log(`Real-Time: Order ${orderId} status updated to ${status}.`);
+                }
+            }
+            // Add logic here for 'session_update' to notify staff of low time remaining
+        }
+
+        // --- 3. Function to interact with the API (S4) ---
+        function updateOrderStatus(orderId, newStatus) {
+            console.log(`Attempting to update Order ${orderId} to ${newStatus}...`);
+            
+            fetch(`/api/karaoke/orders/update_status/${orderId}/`, {
+                method: 'PATCH', // Use PATCH/POST as defined in your API
+                headers: {
+                    'Content-Type': 'application/json',
+                    // CSRF Token is required for non-GET requests in Django
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
+                body: JSON.stringify({ new_status: newStatus })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update order status');
+                }
+                // The successful database save in the view will trigger the signal, 
+                // which broadcasts the status change back to this page (handleRealTimeUpdate).
+                console.log(`API call successful. Signal should now broadcast update for ${orderId}.`);
+            })
+            .catch(error => console.error('Error updating status:', error));
+        }
+
+        // --- 4. Initiate Connections to all active rooms ---
+        active_room_ids.forEach(room_id => {
+            connectToRoom(room_id);
+        });
+        console.log(`Attempting connections to ${active_room_ids.length} active rooms.`);
+
+    </script>
+</body>
+</html>

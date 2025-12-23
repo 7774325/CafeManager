@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room {{ booking.room.name }} - Menu</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .item-card { background: white; border-radius: 10px; padding: 15px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .item-name { font-weight: bold; font-size: 1.1em; }
+        .item-price { color: #27ae60; margin: 10px 0; }
+        .btn-add { background: #e67e22; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; }
+        #cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #2c3e50; color: white; padding: 15px; display: none; justify-content: space-between; align-items: center; }
+        .btn-send { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Welcome, {{ booking.customer_name }}</h1>
+        <p>Ordering for <strong>{{ booking.room.name }}</strong></p>
+    </div>
+
+    <div class="menu-grid">
+        {% for item in menu_items %}
+        <div class="item-card">
+            <div class="item-name">{{ item.name }}</div>
+            <div class="item-price">${{ item.price }}</div>
+            <button class="btn-add" onclick="addToCart({{ item.id }}, '{{ item.name }}', {{ item.price }})">Add to Order</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div id="cart-bar">
+        <div>Total Items: <span id="cart-count">0</span></div>
+        <button class="btn-send" onclick="submitOrder()">🚀 Send Order to Staff</button>
+    </div>
+
+    <script>
+        let cart = [];
+        const bookingId = {{ booking.id }};
+
+        function addToCart(id, name, price) {
+            cart.push({ menu_item_id: id, quantity: 1 });
+            document.getElementById('cart-bar').style.display = 'flex';
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        function submitOrder() {
+            fetch('/karaoke/place-order/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    booking_id: bookingId,
+                    items: cart
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    alert('Order received! Staff are preparing it now.');
+                    cart = [];
+                    document.getElementById('cart-bar').style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

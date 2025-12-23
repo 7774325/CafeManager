@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block header_title %}Financial Overview{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Earnings Dashboard</h2>
+        <div class="d-flex gap-2">
+            <a href="{% url 'export_finance_excel' %}" class="btn btn-success rounded-pill px-3 shadow-sm">
+                <i class="bi bi-file-earmark-excel me-2"></i>Export Excel
+            </a>
+            <button class="btn btn-dark rounded-pill px-3 shadow-sm">
+                <i class="bi bi-file-earmark-pdf me-2"></i>Download PDF Report
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-primary text-white h-100">
+                <h6 class="text-uppercase small fw-bold opacity-75">Room Sales</h6>
+                <h2 class="fw-bold mb-0">${{ total_room_revenue|floatformat:2 }}</h2>
+                <div class="mt-3 small opacity-75">
+                    <i class="bi bi-clock-history me-1"></i> Based on {{ session_count }} sessions
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-success text-white h-100">
+                <h6 class="text-uppercase small fw-bold opacity-75">Food & Drinks</h6>
+                <h2 class="fw-bold mb-0">${{ total_food_revenue|floatformat:2 }}</h2>
+                <div class="mt-3 small opacity-75">
+                    <i class="bi bi-cup-hot me-1"></i> Total menu item sales
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-dark text-white h-100">
+                <h6 class="text-uppercase small fw-bold opacity-75">Total Revenue</h6>
+                <h2 class="fw-bold mb-0">${{ grand_total|floatformat:2 }}</h2>
+                <div class="mt-3 small opacity-75">
+                    <i class="bi bi-graph-up-arrow me-1"></i> Combined daily earnings
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+        <div class="d-flex align-items-start">
+            <div class="text-primary me-3">
+                <i class="bi bi-info-circle-fill fs-4"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1">Report Summary</h6>
+                <p class="text-muted small mb-0">
+                    This report accounts for all <strong>{{ session_count }}</strong> completed transactions. 
+                    Data is filtered for the current authenticated outlet (<strong>{{ user.employee.outlet.name }}</strong>).
+                    Last updated: {{ now|date:"l, d M Y" }}.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">Daily Sales Summary</h2>
+            <p class="text-muted">Revenue breakdown for {{ today|date:"D, d M Y" }}</p>
+        </div>
+        <button onclick="window.print()" class="btn btn-outline-dark d-print-none">
+            <i class="fas fa-print me-2"></i> Print Report
+        </button>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-dark text-white p-3">
+                <small class="text-uppercase opacity-75 fw-bold">Total Revenue</small>
+                <h2 class="fw-bold mb-0">{{ currency }} {{ total_revenue|default:"0.00" }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white p-3">
+                <small class="text-uppercase opacity-75 fw-bold">Cash</small>
+                <h3 class="fw-bold mb-0">{{ currency }} {{ cash_total|default:"0.00" }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info text-white p-3">
+                <small class="text-uppercase opacity-75 fw-bold">Bank Transfer</small>
+                <h3 class="fw-bold mb-0">{{ currency }} {{ transfer_total|default:"0.00" }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white p-3">
+                <small class="text-uppercase opacity-75 fw-bold">Card</small>
+                <h3 class="fw-bold mb-0">{{ currency }} {{ card_total|default:"0.00" }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Most Popular Today</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless align-middle">
+                        <tbody>
+                            {% for item in best_sellers %}
+                            <tr>
+                                <td class="py-3 fw-semibold">{{ item.product__name }}</td>
+                                <td class="text-end"><span class="badge bg-light text-dark">{{ item.total_qty }} sold</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Recent Transaction Log</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="table-light">
+                                    <th class="ps-4">Time</th>
+                                    <th>Customer</th>
+                                    <th>Method</th>
+                                    <th class="text-end pe-4">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent_sales %}
+                                <tr>
+                                    <td class="ps-4 small text-muted">{{ sale.date|time:"H:i" }}</td>
+                                    <td>{{ sale.customer_name }}</td>
+                                    <td><span class="badge bg-light text-dark text-uppercase">{{ sale.payment_method }}</span></td>
+                                    <td class="text-end pe-4 fw-bold">{{ currency }} {{ sale.total_amount }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

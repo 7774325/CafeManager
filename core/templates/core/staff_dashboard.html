@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+<div style="max-width: 400px; margin: 50px auto; text-align: center; border: 1px solid #ccc; padding: 20px; border-radius: 10px;">
+    <h2>Staff Dashboard</h2>
+    <p>Welcome, {{ employee.name }}</p>
+    <hr>
+    <form method="POST">
+        {% csrf_token %}
+        {% if not attendance.clock_in %}
+            <button type="submit" name="action" value="clock_in" style="padding: 15px 30px; background: green; color: white; border: none; border-radius: 5px; cursor: pointer;">Clock In</button>
+        {% elif not attendance.clock_out %}
+            <button type="submit" name="action" value="clock_out" style="padding: 15px 30px; background: red; color: white; border: none; border-radius: 5px; cursor: pointer;">Clock Out</button>
+        {% else %}
+            <div style="background: #e8f5e9; padding: 10px; border-radius: 5px;">
+                <p>Shift Completed Today</p>
+                <p>Total Hours: <strong>{{ attendance.hours_worked }}</strong></p>
+            </div>
+        {% endif %}
+    </form>
+</div>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Staff Monitor</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .controls { display: flex; gap: 10px; }
+        #orders-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .order-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 8px solid #3498db; padding: 20px; position: relative; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .room-name { font-size: 1.4em; font-weight: bold; margin-bottom: 5px; color: #2c3e50; }
+        .order-meta { color: #7f8c8d; font-size: 0.85em; margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px; }
+        .item-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 1.05em; }
+        .booking-fee { margin-top: 15px; color: #95a5a6; font-style: italic; border-top: 1px solid #eee; padding-top: 10px; display: flex; justify-content: space-between; }
+        .total-row { display: flex; justify-content: space-between; font-size: 1.3em; font-weight: bold; color: #c0392b; margin-top: 10px; }
+        .btn { border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-print { background: #34495e; color: white; width: 48%; }
+        .btn-complete { background: #27ae60; color: white; width: 48%; }
+        .btn-clear { background: #e74c3c; color: white; }
+        .btn-sound { background: #4a90e2; color: white; }
+        .actions { display: flex; justify-content: space-between; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Live Staff Monitor</h1>
+        <div class="controls">
+            <button class="btn btn-sound" id="toggleSound">🔊 Sound On</button>
+            <button class="btn btn-clear" onclick="clearAllOrders()">🗑️ Clear All Orders</button>
+        </div>
+    </div>
+
+    <div id="orders-container">
+        </div>
+
+    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"></audio>
+
+    <script>
+        let soundEnabled = true;
+        const soundBtn = document.getElementById('toggleSound');
+        const audio = document.getElementById('notifSound');
+
+        soundBtn.onclick = () => {
+            soundEnabled = !soundEnabled;
+            soundBtn.innerText = soundEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+            soundBtn.classList.toggle('btn-clear', !soundEnabled);
+        };
+
+        // Initialize WebSocket
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const chatSocket = new WebSocket(protocol + window.location.host + '/ws/karaoke/staff/');
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            // Prevent duplicate cards if the script is looping
+            if (document.getElementById(`order-${data.order_id}`)) return;
+
+            if (soundEnabled) audio.play();
+
+            const container = document.getElementById('orders-container');
+            
+            // Calculate total on the fly
+            let itemsTotal = data.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let grandTotal = itemsTotal + data.booking_price;
+
+            const card = document.createElement('div');
+            card.className = 'order-card';
+            card.id = `order-${data.order_id}`;
+            
+            // Fixed timestamp logic to avoid "undefined"
+            card.innerHTML = `
+                <div class="room-name">
+                <a href="/karaoke/checkout/${data.booking_id}/" style="color: inherit; text-decoration: underline;">
+                    Room: ${data.room_name}
+                </a>
+                </div>
+                <div class="order-meta">Order #${data.order_id} | ${data.created_at}</div>
+                <div class="items-list">
+                    ${data.items.map(item => `
+                        <div class="item-row">
+                            <span>${item.name} x${item.quantity}</span>
+                            <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="booking-fee">
+                    <span>Booking Fee:</span>
+                    <span>$${data.booking_price.toFixed(2)}</span>
+                </div>
+                <div class="total-row">
+                    <span>Total:</span>
+                    <span>$${grandTotal.toFixed(2)}</span>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-print" onclick="window.print()">Print</button>
+                    <button class="btn btn-complete" onclick="removeCard(${data.order_id})">Complete</button>
+                </div>
+            `;
+            container.prepend(card);
+        };
+
+        function removeCard(id) {
+            const card = document.getElementById(`order-${id}`);
+            if (card) card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+        }
+
+        // Feature to clear all orders from both UI and Database
+        function clearAllOrders() {
+            if (confirm("Are you sure you want to clear all orders from the screen and database?")) {
+                fetch('/karaoke/clear-orders/', { 
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        document.getElementById('orders-container').innerHTML = '';
+                        location.reload(); 
+                    }
+                });
+            }
+        }
+
+        chatSocket.onclose = function(e) {
+            console.error('Socket closed unexpectedly. Reconnecting in 2s...');
+            setTimeout(() => location.reload(), 2000);
+        };
+    </script>
+</body>
+</html>
