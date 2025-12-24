@@ -173,6 +173,18 @@ Fields:
 
 ## Recent Changes (2025-12-24)
 
+**Feature Enhancement Phase**
+- Footer branding: All pages show "Developed with 💜 ESPECIALLY FOR YOU"
+- Navigation cleanup: Removed duplicate code, organized sidebar by role (Operations → Reports → HR → Public)
+- Credit Billing System implemented:
+  - Credit sales require customer account
+  - Customer.current_balance tracks outstanding debt
+  - Customer.total_credit tracks lifetime credit extended
+  - CreditPayment model for repayments (separate from SaleTransaction)
+  - Inventory deducted on all sales including credit
+  - `/karaoke/customers/pay-credit/<id>/` for credit repayments
+  - Daily summary shows credit sales and repayments separately
+
 **Phase 6: UI/Theme & Portal System**
 - Admin panel styled with #CCCCFF/black gradient theme
 - Landing page with Employee/Admin/Client login portals
