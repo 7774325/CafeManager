@@ -37,12 +37,39 @@ class Product(models.Model):
     def __str__(self):
         return f"{self.name} ({self.category if self.category else 'No Category'})"
 
-class StockAdjustment(models.Model):
-    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, related_name='stock_adjustments', null=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    reason = models.CharField(max_length=255)
-    date = models.DateTimeField(auto_now_add=True)
+class InventoryLog(models.Model):
+    """Log all inventory changes - purchases, sales, adjustments, etc."""
+    ACTION_CHOICES = [
+        ('Sale', 'Sale'),
+        ('Purchase', 'Purchase'),
+        ('Adjustment', 'Adjustment'),
+        ('Spoilage', 'Spoilage'),
+        ('Transfer', 'Transfer'),
+    ]
+    
+    outlet = models.ForeignKey(Outlet, on_delete=models.CASCADE, related_name='inventory_logs', null=True)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='inventory_logs')
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES, default='Sale')
+    quantity_changed = models.IntegerField(help_text="Positive for additions, negative for deductions")
+    previous_level = models.IntegerField(default=0)
+    new_level = models.IntegerField(default=0)
+    reference = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction ID, PO number, etc.")
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.product.name} ({self.action}: {self.quantity_changed})"
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['outlet', 'created_at']),
+            models.Index(fields=['product', 'created_at']),
+        ]
+
+
+# Legacy alias for backward compatibility
+StockAdjustment = InventoryLog
 
 # --- SALES & CUSTOMERS ---
 

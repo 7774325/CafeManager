@@ -7,7 +7,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
-from core.models import Outlet, Product, SaleTransaction, SaleItem, Employee, Customer, CreditPayment
+from core.models import Outlet, Product, SaleTransaction, SaleItem, Employee, Customer, CreditPayment, InventoryLog
 
 # --- HELPER UTILITIES ---
 def get_user_outlet(user):
@@ -170,15 +170,31 @@ def submit_sale(request):
             for item in cart:
                 try:
                     product = Product.objects.get(id=item['id'], outlet=outlet)
+                    qty = int(item['quantity'])
+                    
                     SaleItem.objects.create(
                         sale=transaction, 
                         product=product, 
-                        quantity=int(item['quantity']), 
+                        quantity=qty, 
                         price=Decimal(str(item['price']))
                     )
-                    # Deduct Stock
-                    product.current_stock_level -= int(item['quantity'])
+                    
+                    # Log inventory deduction
+                    previous_level = product.current_stock_level
+                    product.current_stock_level -= qty
                     product.save()
+                    
+                    # Create inventory log
+                    InventoryLog.objects.create(
+                        outlet=outlet,
+                        product=product,
+                        action='Sale',
+                        quantity_changed=-qty,
+                        previous_level=previous_level,
+                        new_level=product.current_stock_level,
+                        reference=f"Transaction #{transaction.id}",
+                        notes=f"Sold by {request.user.username}"
+                    )
                 except Product.DoesNotExist:
                     continue
 
@@ -225,5 +241,38 @@ def financial_summary_report(request): return render(request, 'core/financial_su
 def add_expense(request): return render(request, 'core/add_expense.html')
 @login_required
 def payroll_report(request): return render(request, 'core/payroll_report.html')
+@login_required
+def low_stock_report(request):
+    """Display low stock alert dashboard for manager."""
+    outlet = get_user_outlet(request.user)
+    threshold = int(request.GET.get('threshold', 10))
+    
+    # Get low stock products
+    low_stock_products = Product.objects.filter(
+        outlet=outlet,
+        current_stock_level__lt=threshold
+    ).order_by('current_stock_level')
+    
+    # Get recent inventory logs for these products
+    recent_logs = InventoryLog.objects.filter(
+        outlet=outlet,
+        product__in=low_stock_products
+    ).order_by('-created_at')[:20]
+    
+    stats = {
+        'total_products': Product.objects.filter(outlet=outlet).count(),
+        'low_stock_count': low_stock_products.count(),
+        'critical_stock': Product.objects.filter(outlet=outlet, current_stock_level__lt=5).count(),
+        'out_of_stock': Product.objects.filter(outlet=outlet, current_stock_level__lte=0).count(),
+    }
+    
+    return render(request, 'core/low_stock_report.html', {
+        'low_stock_products': low_stock_products,
+        'recent_logs': recent_logs,
+        'stats': stats,
+        'threshold': threshold,
+        'outlet': outlet
+    })
+
 @login_required
 def outlet_settings(request): return render(request, 'core/settings.html')

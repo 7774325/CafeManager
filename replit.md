@@ -3,173 +3,154 @@
 ## Overview
 Multi-tenant, enterprise-grade platform for managing independent hospitality outlets. Designed as "Loyverse+" with deep karaoke integration, real-time POS, and automated HR/payroll.
 
+---
+
 ## PHASES COMPLETED
 
 ### Phase 1: Multi-Tenant Architecture ✅
 **Every record tied to an Outlet ID - Complete data isolation**
-
-- Outlet Middleware (`CafeManager/middleware.py`): `request.outlet` on every request
+- Outlet Middleware: `request.outlet` on every request
 - Multi-Tenant Utilities: `get_user_outlet()`, `MultiTenantMixin`
-- All core models have outlet FK: Employee, Product, SaleTransaction, Customer, etc.
-
----
+- All core models have outlet FK
 
 ### Phase 2: POS System ✅
-**Interactive product grid, live cart, checkout with real-time stock deduction**
-
+**Interactive product grid, real-time cart, checkout with stock deduction**
 - Product grid (filtered by outlet)
 - Real-time cart with quantity controls
-- Customer selection (outlet-specific)
 - Payment methods: Cash, Card, Transfer, Credit
 - Real-time stock deduction on checkout
 - Customer visit count & credit tracking
-
-**Endpoints:**
-- `GET /pos/` - POS Interface
-- `POST /api/pos/submit/` - Checkout
-
----
+- **Endpoints**: `/pos/`, `/api/pos/submit/`
 
 ### Phase 3: Karaoke Module Backend ✅
-**Complete karaoke session lifecycle with duration-based billing**
+**Complete session lifecycle with duration-based billing**
+- Room model: Status lifecycle (Available → Booked → Active → Cleaning)
+- RoomSession model: Complete session tracking with billing
+- Billing formula: `(actual_minutes + extra_minutes) / 60 × hourly_rate`
+- Session control: Pause/resume, add extra time
+- **Views**: `start_session`, `manage_session`, `checkout_session`
 
-#### **Room Model**
-```
-- Multi-tenant (outlet FK)
-- Status: Available → Booked → Active → Cleaning
-- Types: VIP, Standard
-- Pricing: price_per_hour, price_per_minute (configurable)
-- Capacity tracking
-```
+### Phase 4: Inventory Management ✅
+**Real-time stock tracking with low-stock alerts**
 
-#### **RoomSession Model** (Karaoke Session)
-**Complete session tracking:**
-```
-Session Lifecycle:
-  Booked → Active → Paused → Completed
-  
-Timing Fields:
-  - booked_at: When session was booked
-  - started_at: When customer actually started using room
-  - paused_at: When session was paused (if applicable)
-  - ended_at: When session was finalized
-  
-Duration Tracking:
-  - booked_duration_minutes: Originally booked time
-  - actual_duration_minutes: Time actually used
-  - total_pause_minutes: Time paused (excluded from billing)
-  - extra_time_minutes: Additional time added mid-session
-  
-Billing Fields:
-  - base_rate: Hourly rate at session start (defaults to room rate)
-  - room_charge: Base charge (calculated)
-  - extra_time_charge: Extra time premium (calculated)
-  - food_beverage_charge: F&B from RoomOrder items
-  - total_charge: Grand total (calculated)
-```
+#### **InventoryLog Model**
+- Action types: Sale, Purchase, Adjustment, Spoilage, Transfer
+- Tracks: quantity_changed, previous_level, new_level
+- Fields: reference (Transaction ID), notes, created_at
+- Indexed by: outlet + created_at, product + created_at
+- Read-only fields in admin: created_at, previous_level, new_level
 
-#### **Billing Calculation (Per Spec)**
+#### **Real-Time Stock Deduction**
+When a product is sold via POS:
 ```python
-# Formula for room charge:
-room_charge = (actual_minutes + extra_minutes) / 60 * hourly_rate
-
-# Example:
-# 90 minutes session at 100/hour = 1.5 * 100 = 150
-# + 30 minutes extra = 0.5 * 100 = 50 extra charge
-# + F&B = 200
-# TOTAL = 150 + 50 + 200 = 400
+# 1. Stock deducted from Product.current_stock_level
+# 2. InventoryLog entry created with transaction reference
+# 3. Previous and new levels recorded
+# 4. User attribution (sold by username)
 ```
 
-#### **Session Methods**
-```python
-# Timing
-session.get_elapsed_minutes()        # Minutes used (excl. pauses)
+#### **Low Stock Dashboard** 
+`GET /stock/low/` - Professional, clean interface with:
+- **Statistics Cards**:
+  - Total Products in outlet
+  - Low Stock Count
+  - Critical Stock (< 5 units)
+  - Out of Stock (≤ 0 units)
+- **Adjustable Threshold**: Default 10 units, user-configurable
+- **Low Stock Products Table**: Sorted by lowest level first
+- **Recent Activity Log**: Last 20 inventory changes
+- **Styling**: Lavender (#8b5cf6) & black gradient with professional typography
 
-# Billing (All return Decimal)
-session.calculate_room_charge()      # Base charge
-session.calculate_extra_time_charge() # Extra time premium
-session.recalculate_total()          # Recalc: room + extra + F&B
+#### **UI Features**
+- Gradient header with shadow
+- Responsive grid layout (4-column on desktop, 1-column on mobile)
+- Color-coded stock badges: Critical (red), Low (orange), Out (pink)
+- Hover effects on cards and table rows
+- Clean typography with proper spacing
+- Auto-refresh ready for WebSockets
 
-# Session Management
-session.pause_session()              # Pause active session
-session.resume_session()             # Resume paused session
-session.add_extra_time(minutes)      # Add time mid-session
-session.complete_session()           # Finalize & close
-```
-
-#### **Views**
-- **start_session**: Create new session, set room to Active
-- **manage_session**: Pause/resume, add time (POST-based actions)
-- **checkout_session**: Complete session, calculate charges, create SaleTransaction
-
-#### **Admin Interface**
-- Room management (status, pricing, capacity)
-- RoomSession admin with full billing details
-- BookingRequest, RoomOrder, RoomOrderItem admin panels
-
-#### **Multi-Tenant Safety**
-- All sessions filtered by `request.outlet`
-- Checkout checks `session.outlet == request.outlet`
-- Cascade deletes respect outlet isolation
+#### **Database Migration**
+- Migration 0023: Created InventoryLog, deleted StockAdjustment
+- Admin interface: InventoryLogAdmin with full filtering and search
 
 ---
 
-## Key Database Models & Relations
-```
-Outlet (1) ─────────→ (∞) Room
-  ├─────────→ (∞) RoomSession
-  ├─────────→ (∞) Product
-  ├─────────→ (∞) SaleTransaction
-  └─────────→ (∞) Customer
+## Key Database Models
 
-Room (1) ────────────→ (∞) RoomSession
-RoomSession (1) ────→ (∞) RoomOrder
-RoomOrder (1) ───────→ (∞) RoomOrderItem ──→ Product
+```
+Outlet (1) ────────→ (∞) Product
+        ├─────────→ (∞) SaleTransaction
+        ├─────────→ (∞) InventoryLog
+        ├─────────→ (∞) RoomSession
+        └─────────→ (∞) Customer
+
+Product (1) ────────→ (∞) InventoryLog
+SaleTransaction (1) ─→ (∞) SaleItem
+                   └──→ Product (via SaleItem)
 ```
 
 ---
 
-## API Routes (Karaoke)
+## API Routes
 
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/karaoke/session/start/` | Session creation form |
-| POST | `/karaoke/session/start/` | Create new session |
-| GET | `/karaoke/session/manage/<id>/` | Manage active session |
-| POST | `/karaoke/session/manage/<id>/` | Pause/resume/add time |
-| GET | `/karaoke/session/checkout/<id>/` | Checkout form |
-| POST | `/karaoke/session/checkout/<id>/` | Finalize session & payment |
+### POS
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/pos/` | GET | POS interface |
+| `/api/pos/submit/` | POST | Checkout & create transaction + logs |
+
+### Inventory
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/stock/low/` | GET | Low stock dashboard |
+| `/stock/bulk/` | GET | Bulk stock entry |
+
+### Karaoke
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/karaoke/session/start/` | POST | Create new session |
+| `/karaoke/session/manage/<id>/` | POST | Pause/resume/add time |
+| `/karaoke/session/checkout/<id>/` | POST | Finalize & payment |
 
 ---
 
-## Recent Changes (2025-12-23)
-- **Phase 3 Karaoke Module**: Complete backend implementation
-  - Room model with status lifecycle
-  - RoomSession with comprehensive billing logic
-  - Duration-based pricing: (minutes / 60) × hourly_rate
-  - Session pause/resume tracking
-  - Extra time management
-  - Admin interface for room & session management
-  - Multi-tenant outlet isolation on all models
-  - Database migrations: 0012_delete_roomsession_roomsession_and_more
+## Technology Stack
+- **Framework**: Django 5.2 + REST Framework
+- **Server**: Daphne (ASGI, WebSocket-ready)
+- **Database**: SQLite (dev), PostgreSQL (production)
+- **Frontend**: Bootstrap 5 + vanilla JS
+- **UI**: Lavender & black gradient design
+
+---
+
+## Recent Changes (2025-12-24)
+
+**Phase 4: Inventory Management**
+- Created InventoryLog model (action, quantity_changed, previous_level, new_level)
+- Updated POS checkout to log all stock deductions with transaction reference
+- Built low-stock dashboard with modern UI (lavender/black gradient)
+- Added configurable threshold (default 10 units)
+- Implemented responsive layout with stats cards and activity log
+- Admin interface with filtering by action, outlet, date
+- Database migration 0023 applied successfully
 
 ---
 
 ## Next Phases
 
 1. **Karaoke Frontend** (Priority)
-   - Session dashboard with real-time progress bars
-   - Tablet interface for in-room orders
-   - Staff session management interface
+   - Real-time session dashboard with progress bars
+   - Tablet ordering interface
+   - Staff session management
 
-2. **Inventory Intelligence**
-   - Low stock alert system
-   - Multi-outlet stock transfers
+2. **Multi-Outlet Inventory**
+   - Stock transfers between outlets
+   - Consolidated reporting
 
 3. **HR & Payroll** (Complex)
    - Three payment types: P (Fixed), C (Hourly), D (Daily)
-   - Attendance tracking with GPS
+   - GPS attendance tracking
 
 4. **Financial Intelligence**
-   - P&L reports (Revenue - Expenses)
+   - P&L reports
    - Outlet performance dashboards

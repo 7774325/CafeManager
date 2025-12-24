@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Outlet, Employee, Product, SaleTransaction, SaleItem, Expense, StockAdjustment, Customer, CreditPayment
+from .models import Outlet, Employee, Product, SaleTransaction, SaleItem, Expense, InventoryLog, Customer, CreditPayment
 
 @admin.register(Outlet)
 class OutletAdmin(admin.ModelAdmin):
@@ -32,10 +32,12 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('description', 'amount', 'date', 'outlet')
     list_filter = ('outlet', 'date')
 
-@admin.register(StockAdjustment)
-class StockAdjustmentAdmin(admin.ModelAdmin):
-    list_display = ('product', 'quantity', 'reason', 'date', 'outlet')
-    list_filter = ('outlet', 'reason')
+@admin.register(InventoryLog)
+class InventoryLogAdmin(admin.ModelAdmin):
+    list_display = ('product', 'action', 'quantity_changed', 'created_at', 'outlet')
+    list_filter = ('outlet', 'action', 'created_at')
+    search_fields = ('product__name', 'reference')
+    readonly_fields = ('created_at', 'previous_level', 'new_level')
 
 # --- NEW: CUSTOMER & CREDIT ADMIN ---
 

@@ -1,0 +1,426 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Stock Report - {{ outlet.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5e6ff 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+        
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #8b5cf6;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+        }
+        
+        .stat-card.critical {
+            border-left-color: #dc3545;
+        }
+        
+        .stat-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-card.danger {
+            border-left-color: #ff6b6b;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            padding: 0 1rem;
+        }
+        
+        /* Filter Bar */
+        .filter-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-bar label {
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+        
+        .filter-bar input {
+            padding: 0.6rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .filter-bar input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        .filter-bar button {
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-bar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        /* Product Table */
+        .product-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .table {
+            margin: 0;
+        }
+        
+        .table thead {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+        }
+        
+        .table thead th {
+            padding: 1rem;
+            font-weight: 600;
+            border: none;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f9f7ff;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+        
+        /* Stock Level Badges */
+        .stock-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-block;
+        }
+        
+        .stock-critical {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .stock-low {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+        
+        .stock-empty {
+            background-color: #fce4ec;
+            color: #ad1457;
+        }
+        
+        /* Activity Log */
+        .activity-log {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .activity-log h3 {
+            color: #1a1a2e;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #8b5cf6;
+            padding-bottom: 0.5rem;
+        }
+        
+        .log-entry {
+            padding: 1rem;
+            border-left: 4px solid #8b5cf6;
+            margin-bottom: 1rem;
+            background-color: #f9f7ff;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .log-entry:hover {
+            box-shadow: 0 2px 10px rgba(139, 92, 246, 0.2);
+        }
+        
+        .log-time {
+            font-size: 0.9rem;
+            color: #8b5cf6;
+            font-weight: 600;
+        }
+        
+        .log-product {
+            font-weight: 600;
+            color: #1a1a2e;
+            margin: 0.3rem 0;
+        }
+        
+        .log-action {
+            font-size: 0.95rem;
+            color: #555;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-bar input,
+            .filter-bar button {
+                width: 100%;
+            }
+            
+            .table {
+                font-size: 0.9rem;
+            }
+            
+            .table thead th,
+            .table tbody td {
+                padding: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <h1>📦 Low Stock Report</h1>
+            <p>Monitor inventory levels and get alerts for products running low</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Total Products</div>
+                <div class="stat-number">{{ stats.total_products }}</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-label">Low Stock Items</div>
+                <div class="stat-number" style="color: #ffc107;">{{ stats.low_stock_count }}</div>
+            </div>
+            <div class="stat-card critical">
+                <div class="stat-label">Critical Stock</div>
+                <div class="stat-number" style="color: #dc3545;">{{ stats.critical_stock }}</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-label">Out of Stock</div>
+                <div class="stat-number" style="color: #ff6b6b;">{{ stats.out_of_stock }}</div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <label>Low Stock Threshold:</label>
+            <form method="GET" style="display: flex; gap: 1rem; width: 100%;">
+                <input type="number" name="threshold" value="{{ threshold }}" min="1" max="100">
+                <button type="submit">Update</button>
+            </form>
+        </div>
+
+        <!-- Low Stock Products Table -->
+        <div class="product-table">
+            {% if low_stock_products %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Current Stock</th>
+                            <th>Cost Price</th>
+                            <th>Selling Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in low_stock_products %}
+                            <tr>
+                                <td><strong>{{ product.name }}</strong></td>
+                                <td>{{ product.category|default:"Uncategorized" }}</td>
+                                <td>
+                                    <strong style="font-size: 1.2rem; color: #1a1a2e;">{{ product.current_stock_level }}</strong>
+                                </td>
+                                <td>{{ product.outlet.primary_currency|default:"MVR" }} {{ product.cost_price }}</td>
+                                <td>{{ product.outlet.primary_currency|default:"MVR" }} {{ product.selling_price }}</td>
+                                <td>
+                                    {% if product.current_stock_level <= 0 %}
+                                        <span class="stock-badge stock-empty">OUT OF STOCK</span>
+                                    {% elif product.current_stock_level < 5 %}
+                                        <span class="stock-badge stock-critical">CRITICAL</span>
+                                    {% else %}
+                                        <span class="stock-badge stock-low">LOW STOCK</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <h4>✓ No Low Stock Items</h4>
+                    <p>All products are stocked above the threshold of {{ threshold }} units</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Activity Log -->
+        {% if recent_logs %}
+            <div class="activity-log">
+                <h3>Recent Inventory Changes</h3>
+                {% for log in recent_logs %}
+                    <div class="log-entry">
+                        <div class="log-time">{{ log.created_at|date:"M d, Y H:i" }}</div>
+                        <div class="log-product">{{ log.product.name }}</div>
+                        <div class="log-action">
+                            <strong>{{ log.action }}</strong>:
+                            {% if log.quantity_changed > 0 %}
+                                <span style="color: #28a745;">+{{ log.quantity_changed }}</span>
+                            {% else %}
+                                <span style="color: #dc3545;">{{ log.quantity_changed }}</span>
+                            {% endif %}
+                            units | Level: {{ log.previous_level }} → {{ log.new_level }}
+                            {% if log.reference %}| Ref: {{ log.reference }}{% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Last updated: <strong>{{ "now"|date:"M d, Y H:i:s" }}</strong> | Outlet: <strong>{{ outlet.name }}</strong></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

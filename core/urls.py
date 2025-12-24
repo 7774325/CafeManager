@@ -15,6 +15,7 @@ urlpatterns = [
     path('import/', views.import_data, name='import_data'),
     path('export/', views.export_data, name='export_data'),
     path('stock/bulk/', views.bulk_stock_entry, name='bulk_stock_entry'),
+    path('stock/low/', views.low_stock_report, name='low_stock_report'),
     path('spoilage/', views.log_spoilage, name='log_spoilage'),
     
     # Financials
