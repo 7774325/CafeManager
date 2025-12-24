@@ -130,9 +130,56 @@ Fields:
 | `/pos/` | GET | POS interface |
 | `/api/pos/submit/` | POST | Checkout |
 
+### Phase 6: UI/Theme & Portal System ✅
+
+#### **Admin Panel Theme** (#CCCCFF with Black Gradient)
+- Custom CSS: `static/admin/css/custom_admin.css`
+- Template overrides: `templates/admin/base_site.html`, `templates/admin/login.html`
+- Lavender (#CCCCFF) headers with dark gradient (#1a1a2e → #3d3d5c)
+- Purple accent buttons and links
+
+#### **Landing Page Portal** (`/`)
+- Three login portals: Employee, Admin, Client
+- Shows for unauthenticated users, redirects logged-in users to dashboard
+- Purple/lavender gradient hero section
+- Responsive design with mobile optimization
+
+#### **Public Booking System**
+- Public booking page: `/karaoke/booking/`
+- No login required - customers can request bookings
+- Professional design with booking form
+
+#### **Customer Tablet Interface** (`/karaoke/tablet-order/<session_id>/`)
+- Standalone kiosk-style interface (no login required)
+- Browse menu items by category
+- Add items to cart and send orders to kitchen
+- Live bill display with auto-refresh every 5 seconds
+- Session timer showing remaining time
+- API endpoint: `GET /karaoke/api/session/<id>/bill/`
+
+#### **Responsive Design**
+- Mobile sidebar toggle (hamburger menu)
+- Collapsible navigation on tablets/phones
+- Bootstrap 5 responsive grid throughout
+
+#### **Admin Discoverability**
+- Quick links in admin nav bar to:
+  - Public Site (/)
+  - Booking Page (/karaoke/booking/)
+  - Room Sessions (/karaoke/rooms/)
+- Staff Portal dropdown with public site link
+
 ---
 
 ## Recent Changes (2025-12-24)
+
+**Phase 6: UI/Theme & Portal System**
+- Admin panel styled with #CCCCFF/black gradient theme
+- Landing page with Employee/Admin/Client login portals
+- Public booking page accessible without login
+- Customer tablet interface with live bill updates
+- Responsive mobile design with sidebar toggle
+- Fixed `started_at` field usage in session billing
 
 **Phase 5: HR & Payroll System**
 - Expanded Employee model: payment_type, base_salary, commission_rate, is_active
