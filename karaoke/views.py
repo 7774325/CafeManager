@@ -51,7 +51,7 @@ def dashboard(request):
 # --- ROOM SESSIONS ---
 @login_required
 def karaoke_list(request):
-    outlet = get_user_outlet(request.user)
+    outlet = request.outlet  # Use middleware-provided outlet
     active_sessions = RoomSession.objects.filter(outlet=outlet, status__in=['Booked', 'Active', 'Paused'])
     bookings = BookingRequest.objects.filter(status='Pending').order_by('requested_date')
     
