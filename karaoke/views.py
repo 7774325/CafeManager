@@ -378,6 +378,46 @@ def customer_tablet_order(request, session_id):
     products = Product.objects.filter(outlet=session.outlet).exclude(category='Room Rate')
     return render(request, 'karaoke/tablet_order.html', {'session': session, 'products': products})
 
+def get_session_bill(request, session_id):
+    """API endpoint for live bill display on customer tablet."""
+    session = get_object_or_404(RoomSession, id=session_id)
+    
+    duration_seconds = (timezone.now() - session.started_at).total_seconds()
+    hours = max(1, round(duration_seconds / 3600))
+    rate = 150 if "VIP" in session.room.name else session.room.get_hourly_rate()
+    room_charge = float(hours * rate)
+    
+    orders_data = []
+    kitchen_total = 0
+    for order in session.orders.all():
+        order_items = []
+        for item in order.items.all():
+            order_items.append({
+                'name': item.product.name,
+                'quantity': item.quantity,
+                'price': float(item.price),
+                'subtotal': float(item.price * item.quantity)
+            })
+            kitchen_total += float(item.price * item.quantity)
+        orders_data.append({
+            'id': order.id,
+            'status': order.status,
+            'items': order_items,
+            'total': float(order.total_price)
+        })
+    
+    return JsonResponse({
+        'session_id': session.id,
+        'room_name': session.room.name,
+        'customer_name': session.customer_name,
+        'status': session.status,
+        'duration_hours': hours,
+        'room_charge': room_charge,
+        'orders': orders_data,
+        'kitchen_total': kitchen_total,
+        'grand_total': room_charge + kitchen_total
+    })
+
 @login_required
 def add_to_room_order(request, session_id):
     if request.method == 'POST':
@@ -413,7 +453,7 @@ def checkout_session(request, session_id):
     session = get_object_or_404(RoomSession, id=session_id)
     outlet = get_user_outlet(request.user)
     
-    duration = (timezone.now() - session.start_time).total_seconds() / 3600
+    duration = (timezone.now() - session.started_at).total_seconds() / 3600
     hours = max(1, round(duration)) 
     rate = 150 if "VIP" in session.room.name else 100 
     room_charge = Decimal(hours * rate)

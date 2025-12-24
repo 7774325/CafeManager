@@ -35,7 +35,12 @@ urlpatterns = [
     path('toggle-favorite/<int:product_id>/', views.toggle_favorite, name='toggle_favorite'),
     
     # Public Booking
-    path('welcome/', views.booking_landing, name='booking_landing'),
-    path('welcome/submit/', views.submit_booking_request, name='submit_booking_request'),
+    path('booking/', views.booking_landing, name='booking_landing'),
+    path('welcome/', views.booking_landing, name='booking_welcome'),
+    path('booking/submit/', views.submit_booking_request, name='submit_booking_request'),
+    path('welcome/submit/', views.submit_booking_request, name='submit_booking_legacy'),
     path('booking/approve/<int:booking_id>/', views.approve_booking, name='approve_booking'),
+    
+    # Live Bill API for Tablet
+    path('api/session/<int:session_id>/bill/', views.get_session_bill, name='get_session_bill'),
 ]

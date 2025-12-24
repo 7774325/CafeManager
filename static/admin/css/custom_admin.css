@@ -1,0 +1,123 @@
+:root {
+    --primary-lavender: #CCCCFF;
+    --primary-dark: #1a1a2e;
+    --lavender-accent: #8b5cf6;
+    --gradient-start: #1a1a2e;
+    --gradient-end: #3d3d5c;
+}
+
+#header {
+    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%) !important;
+    border-bottom: 3px solid var(--primary-lavender);
+}
+
+#header h1, #header a:link, #header a:visited, #header #user-tools a {
+    color: var(--primary-lavender) !important;
+}
+
+#branding h1, #branding h1 a:link {
+    color: var(--primary-lavender) !important;
+    font-weight: 700;
+}
+
+.module h2, .module caption, .inline-group h2 {
+    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%) !important;
+    color: var(--primary-lavender) !important;
+    border: none;
+}
+
+div#content-main, #changelist {
+    background: #f8f8ff;
+}
+
+#changelist-filter h2, #changelist-filter h3 {
+    background: var(--primary-dark) !important;
+    color: var(--primary-lavender) !important;
+}
+
+.button, input[type="submit"], input[type="button"], .submit-row input {
+    background: linear-gradient(135deg, var(--lavender-accent) 0%, #6d28d9 100%) !important;
+    border: none !important;
+    color: white !important;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.button:hover, input[type="submit"]:hover, input[type="button"]:hover {
+    background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+}
+
+a.button, a.button:visited {
+    color: white !important;
+}
+
+.deletelink {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+}
+
+tr.row1 { background: #f0f0ff; }
+tr.row2 { background: #fff; }
+tr:hover { background: #e8e8ff !important; }
+
+.model-room a, .model-product a, .model-customer a {
+    color: var(--lavender-accent) !important;
+}
+
+a:link, a:visited {
+    color: var(--lavender-accent);
+}
+
+body.login {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #2d2d4a 100%);
+}
+
+body.login #container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    border-top: 4px solid var(--primary-lavender);
+}
+
+body.login #header {
+    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+    border-radius: 8px 8px 0 0;
+}
+
+body.login #header h1 a {
+    color: var(--primary-lavender) !important;
+}
+
+body.login .submit-row input {
+    background: linear-gradient(135deg, var(--lavender-accent) 0%, #6d28d9 100%) !important;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 6px;
+}
+
+#nav-sidebar {
+    background: linear-gradient(180deg, var(--primary-dark) 0%, #2d2d4a 100%);
+}
+
+#nav-sidebar .module h2 {
+    color: var(--primary-lavender) !important;
+}
+
+#nav-sidebar .module th {
+    background: transparent !important;
+}
+
+#nav-sidebar a:link, #nav-sidebar a:visited {
+    color: #ddd !important;
+}
+
+#nav-sidebar a:hover {
+    color: var(--primary-lavender) !important;
+}
+
+@media (max-width: 767px) {
+    #header { padding: 10px; }
+    #branding h1 { font-size: 18px; }
+    .module, .dashboard #content { padding: 10px; }
+}

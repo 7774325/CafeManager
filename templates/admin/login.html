@@ -1,0 +1,83 @@
+{% extends "admin/login.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+<style>
+    body.login {
+        background: linear-gradient(135deg, #1a1a2e 0%, #3d3d5c 100%);
+        min-height: 100vh;
+    }
+    #container {
+        max-width: 420px;
+        margin: 60px auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 15px 45px rgba(0,0,0,0.4);
+        overflow: hidden;
+    }
+    #header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #3d3d5c 100%);
+        padding: 25px;
+        text-align: center;
+    }
+    #header h1 a {
+        color: #CCCCFF !important;
+        font-size: 24px;
+        text-decoration: none;
+    }
+    #content {
+        padding: 30px;
+    }
+    .form-row label {
+        color: #1a1a2e;
+        font-weight: 600;
+    }
+    input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+        border-color: #8b5cf6;
+        outline: none;
+    }
+    .submit-row {
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    .submit-row input[type="submit"] {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
+        border: none;
+        color: white !important;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .submit-row input[type="submit"]:hover {
+        background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+    }
+    .back-link {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .back-link a {
+        color: #8b5cf6;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+<div class="back-link">
+    <a href="/">Back to Home</a>
+</div>
+{% endblock %}

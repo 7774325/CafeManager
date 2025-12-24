@@ -1,173 +1,411 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container-fluid bg-light min-vh-100 p-3">
-    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
-        <div>
-            <h2 class="fw-bold mb-0">{{ session.room_name }}</h2>
-            <p class="text-muted mb-0">Welcome, <strong>{{ session.customer_name }}</strong></p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room {{ session.room.name }} - Order</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header-bar {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .room-info h2 { font-weight: 700; margin: 0; }
+        .room-info p { margin: 0; opacity: 0.9; }
+        .timer-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .main-container { padding: 20px; }
+        .menu-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i { color: #8b5cf6; }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .product-card {
+            background: #f8f8ff;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .product-card:hover, .product-card:active {
+            border-color: #8b5cf6;
+            transform: scale(0.98);
+            background: #ede9fe;
+        }
+        .product-card .icon {
+            font-size: 2rem;
+            color: #8b5cf6;
+            margin-bottom: 8px;
+        }
+        .product-card h6 {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+        }
+        .product-card .price {
+            color: #22c55e;
+            font-weight: 700;
+        }
+        .cart-section {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .cart-header {
+            background: #1a1a2e;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .cart-items {
+            max-height: 200px;
+            overflow-y: auto;
+            min-height: 100px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-item h6 { margin: 0; font-weight: 600; }
+        .cart-item small { color: #666; }
+        .cart-footer {
+            padding: 20px;
+            background: #f8f8ff;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .total-row .amount { color: #8b5cf6; }
+        .btn-send {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+        }
+        .btn-send:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .live-bill {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .bill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .bill-header h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0;
+        }
+        .refresh-indicator {
+            font-size: 0.8rem;
+            color: #22c55e;
+        }
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .bill-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #8b5cf6;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+        .order-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .order-status.pending { background: #fef3c7; color: #92400e; }
+        .order-status.completed { background: #d1fae5; color: #065f46; }
+        
+        @media (min-width: 768px) {
+            .main-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+            .right-panel { display: flex; flex-direction: column; gap: 20px; }
+        }
+        @media (max-width: 767px) {
+            .product-grid { grid-template-columns: repeat(2, 1fr); max-height: 40vh; }
+            .header-bar { flex-direction: column; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="room-info">
+            <h2><i class="fas fa-door-open me-2"></i>{{ session.room.name }}</h2>
+            <p>Welcome, <strong>{{ session.customer_name }}</strong></p>
         </div>
-        <div class="text-end">
-            <span class="badge bg-primary fs-5 px-3 py-2" id="tabletTimer">Loading...</span>
+        <div class="timer-badge" id="sessionTimer">
+            <i class="fas fa-clock me-2"></i><span id="timerText">Loading...</span>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <h4 class="fw-bold"><i class="fas fa-utensils me-2 text-warning"></i>Order Snacks & Drinks</h4>
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="menu-section">
+                <div class="section-title">
+                    <i class="fas fa-utensils"></i> Order Food & Drinks
                 </div>
-                <div class="card-body" style="max-height: 70vh; overflow-y: auto;">
-                    <div class="row g-3">
-                        {% for product in products %}
-                        <div class="col-6 col-lg-4">
-                            <div class="card h-100 border-0 shadow-sm text-center p-2 product-card" 
-                                 onclick="addToTabletCart('{{ product.id }}', '{{ product.name }}', '{{ product.selling_price }}')">
-                                <div class="py-3">
-                                    <i class="fas fa-cocktail fa-2x text-primary mb-2"></i>
-                                    <h6 class="mb-1">{{ product.name }}</h6>
-                                    <p class="text-success fw-bold mb-0">IDR {{ product.selling_price }}</p>
-                                </div>
-                                <button class="btn btn-sm btn-outline-primary rounded-pill mt-2">Add</button>
-                            </div>
-                        </div>
-                        {% endfor %}
+                <div class="product-grid">
+                    {% for product in products %}
+                    <div class="product-card" onclick="addToCart('{{ product.id }}', '{{ product.name }}', {{ product.selling_price }})">
+                        <div class="icon"><i class="fas fa-cocktail"></i></div>
+                        <h6>{{ product.name }}</h6>
+                        <div class="price">MVR {{ product.selling_price }}</div>
                     </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4 w-100">No products available</div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Your Order</h5>
+        <div class="right-panel">
+            <div class="cart-section">
+                <div class="cart-header">
+                    <i class="fas fa-shopping-cart me-2"></i>Your Order
                 </div>
-                <div class="card-body p-0">
-                    <div id="tabletCartItems" class="list-group list-group-flush" style="min-height: 200px;">
-                        <div class="text-center py-5 text-muted empty-msg">
-                            <p>Select items to order</p>
-                        </div>
-                    </div>
+                <div class="cart-items" id="cartItems">
+                    <div class="empty-cart">Tap items to add to your order</div>
                 </div>
-                <div class="card-footer bg-white border-0">
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="h5">Total:</span>
-                        <span class="h5 fw-bold text-primary" id="tabletTotal">IDR 0</span>
+                <div class="cart-footer">
+                    <div class="total-row">
+                        <span>Order Total:</span>
+                        <span class="amount" id="cartTotal">MVR 0</span>
                     </div>
-                    <button class="btn btn-success btn-lg w-100 py-3 fw-bold shadow" id="btnSendToKitchen" onclick="sendToKitchen()" disabled>
-                        SEND TO KITCHEN
+                    <button class="btn-send" id="btnSend" onclick="sendOrder()" disabled>
+                        <i class="fas fa-paper-plane me-2"></i>SEND TO KITCHEN
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<div class="modal fade" id="successModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center p-4">
-            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
-            <h3>Order Received!</h3>
-            <p>Our staff is preparing your items.</p>
-            <button class="btn btn-primary" data-bs-dismiss="modal">Great!</button>
-        </div>
-    </div>
-</div>
-
-<script>
-let tabletCart = [];
-const sessionId = "{{ session.id }}";
-
-function addToTabletCart(id, name, price) {
-    const existing = tabletCart.find(item => item.id === id);
-    if (existing) {
-        existing.quantity += 1;
-    } else {
-        tabletCart.push({ id: id, name: name, price: parseFloat(price), quantity: 1 });
-    }
-    renderTabletCart();
-}
-
-function renderTabletCart() {
-    const container = document.getElementById('tabletCartItems');
-    const totalEl = document.getElementById('tabletTotal');
-    const btn = document.getElementById('btnSendToKitchen');
-    
-    if (tabletCart.length === 0) {
-        container.innerHTML = '<div class="text-center py-5 text-muted empty-msg"><p>Select items to order</p></div>';
-        totalEl.innerText = "IDR 0";
-        btn.disabled = true;
-        return;
-    }
-
-    btn.disabled = false;
-    let html = '';
-    let total = 0;
-
-    tabletCart.forEach((item, index) => {
-        html += `
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-0">${item.name}</h6>
-                    <small class="text-muted">IDR ${item.price} x ${item.quantity}</small>
+            <div class="live-bill">
+                <div class="bill-header">
+                    <h5><i class="fas fa-receipt me-2"></i>Live Bill</h5>
+                    <span class="refresh-indicator" id="billRefresh"><i class="fas fa-sync-alt"></i> Auto-updating</span>
                 </div>
-                <div>
-                    <button class="btn btn-sm btn-outline-danger border-0" onclick="removeFromTabletCart(${index})">
+                <div id="billContent">
+                    <div class="bill-item">
+                        <span>Room Charge</span>
+                        <span id="billRoomCharge">MVR 0</span>
+                    </div>
+                    <div class="bill-item">
+                        <span>Kitchen Orders</span>
+                        <span id="billKitchenTotal">MVR 0</span>
+                    </div>
+                    <div class="bill-total">
+                        <span>TOTAL</span>
+                        <span id="billGrandTotal">MVR 0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center p-4" style="border-radius: 16px;">
+                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                <h3>Order Sent!</h3>
+                <p class="text-muted">Our staff is preparing your items.</p>
+                <button class="btn btn-primary px-4 py-2" data-bs-dismiss="modal" style="background: #8b5cf6; border: none;">Great!</button>
+            </div>
+        </div>
+    </div>
+
+    {% load static %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    const sessionId = {{ session.id }};
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrfToken = getCookie('csrftoken');
+    let cart = [];
+
+    function addToCart(id, name, price) {
+        const existing = cart.find(item => item.id === id);
+        if (existing) {
+            existing.quantity += 1;
+        } else {
+            cart.push({ id, name, price: parseFloat(price), quantity: 1 });
+        }
+        renderCart();
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        renderCart();
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cartItems');
+        const totalEl = document.getElementById('cartTotal');
+        const btn = document.getElementById('btnSend');
+
+        if (cart.length === 0) {
+            container.innerHTML = '<div class="empty-cart">Tap items to add to your order</div>';
+            totalEl.textContent = 'MVR 0';
+            btn.disabled = true;
+            return;
+        }
+
+        let html = '';
+        let total = 0;
+        cart.forEach((item, index) => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+            html += `
+                <div class="cart-item">
+                    <div>
+                        <h6>${item.name}</h6>
+                        <small>MVR ${item.price} x ${item.quantity}</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${index})">
                         <i class="fas fa-times"></i>
                     </button>
-                </div>
-            </div>`;
-        total += (item.price * item.quantity);
-    });
+                </div>`;
+        });
 
-    container.innerHTML = html;
-    totalEl.innerText = "IDR " + total.toLocaleString();
-}
-
-function removeFromTabletCart(index) {
-    tabletCart.splice(index, 1);
-    renderTabletCart();
-}
-
-function sendToKitchen() {
-    fetch(`/karaoke/room-order/${sessionId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ items: tabletCart })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            tabletCart = [];
-            renderTabletCart();
-            var myModal = new bootstrap.Modal(document.getElementById('successModal'));
-            myModal.show();
-        }
-    });
-}
-
-// Simple timer to show remaining time
-const endTime = new Date("{{ session.end_time|date:'Y-m-d H:i:s' }}").getTime();
-function updateTabletTimer() {
-    const now = new Date().getTime();
-    const diff = endTime - now;
-    if (diff < 0) {
-        document.getElementById('tabletTimer').innerText = "TIME EXPIRED";
-        return;
+        container.innerHTML = html;
+        totalEl.textContent = 'MVR ' + total.toLocaleString();
+        btn.disabled = false;
     }
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const secs = Math.floor((diff % (1000 * 60)) / 1000);
-    document.getElementById('tabletTimer').innerText = mins + "m " + secs + "s left";
-}
-setInterval(updateTabletTimer, 1000);
-</script>
 
-<style>
-    .product-card { cursor: pointer; transition: 0.2s; }
-    .product-card:active { transform: scale(0.95); }
-    .badge { font-family: monospace; }
-</style>
-{% endblock %}
+    function sendOrder() {
+        document.getElementById('btnSend').disabled = true;
+        fetch(`/karaoke/room-order/${sessionId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ items: cart })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                cart = [];
+                renderCart();
+                new bootstrap.Modal(document.getElementById('successModal')).show();
+                refreshBill();
+            }
+        })
+        .catch(() => {
+            document.getElementById('btnSend').disabled = false;
+        });
+    }
+
+    function refreshBill() {
+        fetch(`/karaoke/api/session/${sessionId}/bill/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('billRoomCharge').textContent = 'MVR ' + data.room_charge.toLocaleString();
+                document.getElementById('billKitchenTotal').textContent = 'MVR ' + data.kitchen_total.toLocaleString();
+                document.getElementById('billGrandTotal').textContent = 'MVR ' + data.grand_total.toLocaleString();
+            })
+            .catch(() => {});
+    }
+
+    function updateTimer() {
+        const startTime = new Date("{{ session.started_at|date:'c' }}").getTime();
+        const duration = {{ session.booked_duration_minutes }} * 60 * 1000;
+        const endTime = startTime + duration;
+        const now = Date.now();
+        const remaining = endTime - now;
+
+        if (remaining <= 0) {
+            document.getElementById('timerText').textContent = 'TIME UP';
+            document.getElementById('sessionTimer').style.background = 'rgba(239,68,68,0.3)';
+        } else {
+            const mins = Math.floor(remaining / 60000);
+            const secs = Math.floor((remaining % 60000) / 1000);
+            document.getElementById('timerText').textContent = `${mins}m ${secs}s left`;
+        }
+    }
+
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+    setInterval(refreshBill, 5000);
+    refreshBill();
+    </script>
+</body>
+</html>

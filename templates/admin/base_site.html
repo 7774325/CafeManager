@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | CafeManager Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">CafeManager Admin</a></h1>
+{% endblock %}
+
+{% block nav-global %}
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #3d3d5c 100%); padding: 8px 15px; border-bottom: 2px solid #CCCCFF;">
+    <a href="/" style="color: #CCCCFF; margin-right: 20px; text-decoration: none;">Public Site</a>
+    <a href="/karaoke/booking/" style="color: #CCCCFF; margin-right: 20px; text-decoration: none;">Booking Page</a>
+    <a href="/karaoke/rooms/" style="color: #CCCCFF; text-decoration: none;">Room Sessions</a>
+</div>
+{% endblock %}

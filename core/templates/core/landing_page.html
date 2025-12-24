@@ -140,6 +140,75 @@
             margin-top: 0.5rem;
             font-weight: 600;
         }
+        
+        .login-portals {
+            background: #f8f8ff;
+        }
+        .portal-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 100%;
+        }
+        .portal-card:hover {
+            transform: translateY(-8px);
+            border-color: #8b5cf6;
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.25);
+        }
+        .portal-card.admin-portal { border-top: 4px solid #8b5cf6; }
+        .portal-card.client-portal { border-top: 4px solid #22c55e; }
+        .portal-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+        }
+        .portal-card.client-portal .portal-icon {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        }
+        .portal-card h3 {
+            color: #1a1a2e;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        .portal-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+        .portal-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .portal-card.client-portal .portal-btn {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        }
+        .portal-card:hover .portal-btn {
+            transform: scale(1.05);
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 1rem; }
+            .portal-card { padding: 1.5rem; margin-bottom: 1rem; }
+            .feature-card { padding: 1.5rem; }
+            .stat-box { padding: 1.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -164,7 +233,45 @@
             <h1>CafeManager</h1>
             <p>Enterprise Café & Karaoke Management System</p>
             <p style="font-size: 1rem; opacity: 0.9;">Manage POS, Karaoke Sessions, Inventory & Payroll in one platform</p>
-            <a href="/admin/login/" class="btn btn-primary btn-lg">Get Started</a>
+        </div>
+    </section>
+    
+    <!-- Login Portals -->
+    <section class="login-portals py-5">
+        <div class="container">
+            <h2 style="text-align: center; color: #1a1a2e; font-weight: 700; margin-bottom: 2rem;">Access Portal</h2>
+            <div class="row justify-content-center g-4">
+                <div class="col-md-4">
+                    <div class="portal-card" onclick="window.location='/admin/login/?next=/karaoke/dashboard/'">
+                        <div class="portal-icon">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                        <h3>Employee Portal</h3>
+                        <p>Access POS, attendance tracking, and daily operations</p>
+                        <span class="portal-btn">Login as Employee</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="portal-card admin-portal" onclick="window.location='/admin/'">
+                        <div class="portal-icon">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </div>
+                        <h3>Admin Portal</h3>
+                        <p>Full system administration, reports, and configuration</p>
+                        <span class="portal-btn">Login as Admin</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="portal-card client-portal" onclick="window.location='/karaoke/booking/'">
+                        <div class="portal-icon">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <h3>Client Portal</h3>
+                        <p>Book karaoke rooms and browse our services</p>
+                        <span class="portal-btn">Book a Room</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
