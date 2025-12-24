@@ -29,6 +29,49 @@ def notify_sita(subject, message):
 
 
 @login_required
+def preview_bill(request, session_id):
+    """Preview bill without modifying session state."""
+    from django.utils.html import escape
+    session = get_object_or_404(RoomSession, id=session_id)
+    outlet = get_user_outlet(request.user)
+    
+    if session.outlet != outlet:
+        return HttpResponse("<p>Session not found.</p>")
+    
+    # Use session's base_rate (set when session started) or room's hourly rate
+    room_rate = session.base_rate or session.room.price_per_hour or Decimal('100')
+    
+    # Calculate duration
+    if session.started_at:
+        duration = timezone.now() - session.started_at
+        hours = max(1, round(duration.total_seconds() / 3600))
+    else:
+        hours = 1
+    
+    room_charge = Decimal(hours) * room_rate
+    kitchen_total = session.orders.aggregate(Sum('total_price'))['total_price__sum'] or Decimal('0')
+    grand_total = room_charge + kitchen_total
+    
+    # Escape user-provided data
+    room_name = escape(session.room.name)
+    customer_name = escape(session.customer_name or 'Walk-in')
+    
+    html = f'''
+    <div class="p-3">
+        <h6 class="fw-bold mb-3" style="color: #1a1a2e;">Bill Preview - {room_name}</h6>
+        <p class="text-muted small mb-2">Customer: {customer_name}</p>
+        <table class="table table-sm">
+            <tr><td>Room ({hours} hrs @ {room_rate})</td><td class="text-end fw-semibold">{CURRENCY} {room_charge:.2f}</td></tr>
+            <tr><td>Food & Beverages</td><td class="text-end fw-semibold">{CURRENCY} {kitchen_total:.2f}</td></tr>
+            <tr class="table-light"><td class="fw-bold">Total</td><td class="text-end fw-bold" style="color: #1a1a2e;">{CURRENCY} {grand_total:.2f}</td></tr>
+        </table>
+        <p class="text-muted small mt-2 mb-0"><i class="fas fa-info-circle me-1"></i> This is a preview. Session is still active.</p>
+    </div>
+    '''
+    return HttpResponse(html)
+
+
+@login_required
 def checkout_session(request, session_id):
     """Checkout and close a karaoke session."""
     session = get_object_or_404(RoomSession, id=session_id)

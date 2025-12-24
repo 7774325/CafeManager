@@ -174,15 +174,11 @@
         const modal = new bootstrap.Modal(document.getElementById('previewModal'));
         modal.show();
         
-        // Simple fetch to a checkout-like preview logic
-        fetch(`/karaoke/session/checkout/${sessionId}/`)
+        // Fetch bill preview without modifying session
+        fetch(`/karaoke/session/preview/${sessionId}/`)
             .then(response => response.text())
             .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                // Extract only the bill table part from the checkout page
-                const billDetails = doc.querySelector('.container'); 
-                document.getElementById('previewBody').innerHTML = billDetails ? billDetails.innerHTML : "Error loading bill details.";
+                document.getElementById('previewBody').innerHTML = html;
             })
             .catch(err => {
                 document.getElementById('previewBody').innerHTML = "Could not load preview.";

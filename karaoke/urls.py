@@ -12,6 +12,7 @@ urlpatterns = [
     path('session/start/', views.start_session, name='start_session'),
     path('session/manage/<int:session_id>/', views.manage_session, name='manage_session'),
     path('session/checkout/<int:session_id>/', views.checkout_session, name='checkout_session'),
+    path('session/preview/<int:session_id>/', views.preview_bill, name='preview_bill'),
     
     # Kitchen & Ordering
     path('kitchen/', views.kitchen_view, name='kitchen_view'),
