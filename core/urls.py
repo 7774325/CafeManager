@@ -27,4 +27,11 @@ urlpatterns = [
     path('settings/', views.outlet_settings, name='outlet_settings'),
     path('credit/', views.customer_credit_list, name='customer_credit_list'),
     path('credit/clear/<int:customer_id>/', views.clear_partial_credit, name='clear_partial_credit'),
+    
+    # HR & Payroll
+    path('attendance/check-in/', views.attendance_check_in, name='attendance_check_in'),
+    path('attendance/check-out/', views.attendance_check_out, name='attendance_check_out'),
+    path('attendance/report/', views.attendance_report, name='attendance_report'),
+    path('payroll/calculate/', views.payroll_calculate, name='payroll_calculate'),
+    path('payroll/report/', views.payroll_report, name='payroll_report'),
 ]

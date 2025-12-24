@@ -1,34 +1,74 @@
-{% extends 'core/base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payroll Report - {{ outlet.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5e6ff 0%, #1a1a2e 100%); min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; }
+        .header h1 { font-weight: 700; margin: 0; }
+        .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: none; }
+        table { background: white; border-radius: 12px; overflow: hidden; }
+        thead { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; }
+        th { padding: 1rem; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; }
+        td { padding: 0.8rem 1rem; vertical-align: middle; }
+        tbody tr:hover { background-color: #f9f7ff; }
+        .total-row { background-color: #e0c3fc; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>💰 Payroll Report</h1>
+            <p>{{ outlet.name }} - {{ year }}-{{ month|stringformat:"02d" }}</p>
+        </div>
+    </div>
 
-{% block content %}
-<div class="container py-4">
-    <h2 class="text-primary fw-bold mb-4"><i class="fas fa-users"></i> Payroll: {{ outlet.name }}</h2>
+    <div class="container">
+        <!-- Total -->
+        <div class="card mb-4 p-4 bg-light">
+            <h3>Total Payroll: <span class="text-primary">MVR {{ total_payroll|floatformat:2 }}</span></h3>
+        </div>
 
-    <div class="card shadow-sm border-0 bg-white">
+        <!-- Table -->
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-dark">
+            <table class="table">
+                <thead>
                     <tr>
-                        <th class="ps-4">Employee</th>
-                        <th>Position / Role</th>
-                        <th class="text-end">Monthly Salary</th>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Base Amount</th>
+                        <th>Commission</th>
+                        <th>Total Earnings</th>
+                        <th>Deductions</th>
+                        <th>Net Pay</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for employee in outlet.employee_set.all %}
+                    {% for payroll in payrolls %}
                     <tr>
-                        <td class="ps-4 fw-bold text-dark">{{ employee.user.username }}</td>
-                        <td>{{ employee.role|default:"Staff" }}</td>
-                        <td class="text-end fw-bold">
-                            $ {{ employee.salary|floatformat:2 }}
-                        </td>
+                        <td><strong>{{ payroll.employee.name }}</strong></td>
+                        <td>{{ payroll.employee.get_payment_type_display }}</td>
+                        <td>{{ payroll.base_amount|floatformat:2 }}</td>
+                        <td>{{ payroll.commission_amount|floatformat:2 }}</td>
+                        <td>{{ payroll.total_earnings|floatformat:2 }}</td>
+                        <td>{{ payroll.deductions|floatformat:2 }}</td>
+                        <td><strong>{{ payroll.net_pay|floatformat:2 }}</strong></td>
+                        <td><span class="badge bg-info">{{ payroll.status }}</span></td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="3" class="text-center py-5 text-muted">No employees found.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">No payroll records</td></tr>
                     {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="6">TOTAL</td>
+                        <td>MVR {{ total_payroll|floatformat:2 }}</td>
+                        <td></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

@@ -7,7 +7,9 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
-from core.models import Outlet, Product, SaleTransaction, SaleItem, Employee, Customer, CreditPayment, InventoryLog
+from core.models import Outlet, Product, SaleTransaction, SaleItem, Employee, Customer, CreditPayment, InventoryLog, Attendance, Payroll
+from datetime import datetime, timedelta, date
+from django.utils import timezone
 
 # --- HELPER UTILITIES ---
 def get_user_outlet(user):
@@ -271,6 +273,131 @@ def low_stock_report(request):
         'recent_logs': recent_logs,
         'stats': stats,
         'threshold': threshold,
+        'outlet': outlet
+    })
+
+@login_required
+def attendance_check_in(request):
+    """Employee check-in."""
+    outlet = get_user_outlet(request.user)
+    employee = Employee.objects.filter(user=request.user, outlet=outlet).first()
+    
+    if not employee:
+        messages.error(request, "No employee profile found")
+        return redirect('dashboard')
+    
+    today = date.today()
+    attendance, created = Attendance.objects.get_or_create(
+        employee=employee,
+        outlet=outlet,
+        date=today
+    )
+    
+    if not attendance.check_in_time:
+        attendance.check_in_time = timezone.now().time()
+        attendance.save()
+        messages.success(request, f"Checked in at {attendance.check_in_time.strftime('%H:%M')}")
+    else:
+        messages.info(request, "Already checked in today")
+    
+    return redirect('dashboard')
+
+@login_required
+def attendance_check_out(request):
+    """Employee check-out."""
+    outlet = get_user_outlet(request.user)
+    employee = Employee.objects.filter(user=request.user, outlet=outlet).first()
+    
+    if not employee:
+        messages.error(request, "No employee profile found")
+        return redirect('dashboard')
+    
+    today = date.today()
+    try:
+        attendance = Attendance.objects.get(employee=employee, outlet=outlet, date=today)
+        if not attendance.check_out_time:
+            attendance.check_out_time = timezone.now().time()
+            attendance.calculate_hours_worked()
+            attendance.save()
+            messages.success(request, f"Checked out at {attendance.check_out_time.strftime('%H:%M')} - {attendance.hours_worked} hours worked")
+        else:
+            messages.info(request, "Already checked out today")
+    except Attendance.DoesNotExist:
+        messages.error(request, "No check-in record found for today")
+    
+    return redirect('dashboard')
+
+@login_required
+def attendance_report(request):
+    """View attendance for the outlet."""
+    outlet = get_user_outlet(request.user)
+    month = request.GET.get('month', date.today().month)
+    year = request.GET.get('year', date.today().year)
+    
+    try:
+        month = int(month)
+        year = int(year)
+    except:
+        month = date.today().month
+        year = date.today().year
+    
+    attendances = Attendance.objects.filter(
+        outlet=outlet,
+        date__year=year,
+        date__month=month
+    ).order_by('employee__name', '-date')
+    
+    employees = Employee.objects.filter(outlet=outlet, is_active=True)
+    
+    return render(request, 'core/attendance_report.html', {
+        'attendances': attendances,
+        'employees': employees,
+        'month': month,
+        'year': year,
+        'outlet': outlet
+    })
+
+@login_required
+def payroll_calculate(request):
+    """Calculate payroll for a month."""
+    outlet = get_user_outlet(request.user)
+    month = int(request.GET.get('month', date.today().month))
+    year = int(request.GET.get('year', date.today().year))
+    
+    employees = Employee.objects.filter(outlet=outlet, is_active=True)
+    
+    for employee in employees:
+        payroll, created = Payroll.objects.get_or_create(
+            employee=employee,
+            outlet=outlet,
+            year=year,
+            month=month
+        )
+        payroll.calculate_payroll()
+    
+    messages.success(request, f"Payroll calculated for {year}-{month:02d}")
+    return redirect('payroll_report', year=year, month=month)
+
+@login_required
+def payroll_report(request):
+    """View payroll for the outlet."""
+    outlet = get_user_outlet(request.user)
+    month = int(request.GET.get('month', date.today().month))
+    year = int(request.GET.get('year', date.today().year))
+    
+    payrolls = Payroll.objects.filter(
+        outlet=outlet,
+        year=year,
+        month=month
+    ).order_by('employee__name')
+    
+    total_payroll = payrolls.aggregate(Sum('net_pay'))['net_pay__sum'] or Decimal('0')
+    
+    return render(request, 'core/payroll_report.html', {
+        'payrolls': payrolls,
+        'total_payroll': total_payroll,
+        'month': month,
+        'year': year,
         'outlet': outlet
     })
 

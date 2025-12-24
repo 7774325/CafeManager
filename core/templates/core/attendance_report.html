@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Report - {{ outlet.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5e6ff 0%, #1a1a2e 100%); min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; }
+        .header h1 { font-weight: 700; margin: 0; }
+        .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: none; }
+        table { background: white; border-radius: 12px; overflow: hidden; }
+        thead { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; }
+        th { padding: 1rem; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; }
+        td { padding: 0.8rem 1rem; vertical-align: middle; }
+        tbody tr:hover { background-color: #f9f7ff; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>📋 Attendance Report</h1>
+            <p>{{ outlet.name }}</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Filter -->
+        <div class="card mb-4 p-3">
+            <form method="GET" class="d-flex gap-2">
+                <input type="number" name="month" min="1" max="12" value="{{ month }}" class="form-control" style="width: 100px;" placeholder="Month">
+                <input type="number" name="year" min="2020" value="{{ year }}" class="form-control" style="width: 100px;" placeholder="Year">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{% url 'payroll_calculate' %}?month={{ month }}&year={{ year }}" class="btn btn-success">Calculate Payroll</a>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Date</th>
+                        <th>Check-In</th>
+                        <th>Check-Out</th>
+                        <th>Hours Worked</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for att in attendances %}
+                    <tr>
+                        <td><strong>{{ att.employee.name }}</strong></td>
+                        <td>{{ att.date }}</td>
+                        <td>{{ att.check_in_time|default:"—" }}</td>
+                        <td>{{ att.check_out_time|default:"—" }}</td>
+                        <td>{{ att.hours_worked }}</td>
+                        <td>{{ att.notes|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted">No attendance records</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
