@@ -107,7 +107,7 @@
 
             <li class="nav-item dropdown mt-4 px-3">
                 <a class="btn btn-outline-light dropdown-toggle w-100 text-start border-secondary" href="#" role="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-tools me-2 text-warning"></i> Staff Portal
+                    <i class="fas fa-tools me-2 text-warning"></i> Reports & Data
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark w-100 shadow">
                     <li><h6 class="dropdown-header">Monitoring</h6></li>
@@ -115,17 +115,33 @@
                     <li><a class="dropdown-item" href="/karaoke/summary/"><i class="fas fa-file-invoice-dollar me-2"></i> Daily Summary</a></li>
                     
                     <li><hr class="dropdown-divider border-secondary"></li>
-                    <li><h6 class="dropdown-header">Databases</h6></li>
-                    <li><a class="dropdown-item" href="{% url 'customer_list' %}"><i class="fas fa-users me-2"></i> Customer Directory</a></li>
+                    <li><h6 class="dropdown-header">Records</h6></li>
+                    <li><a class="dropdown-item" href="{% url 'customer_list' %}"><i class="fas fa-users me-2"></i> Customers</a></li>
                     <li><a class="dropdown-item" href="{% url 'sales_history' %}"><i class="fas fa-history me-2"></i> Sales History</a></li>
-                    <li><a class="dropdown-item" href="{% url 'low_stock_report' %}"><i class="fas fa-exclamation-triangle me-2"></i> Stock Alerts</a></li>
+                    <li><a class="dropdown-item" href="{% url 'low_stock_report' %}"><i class="fas fa-boxes me-2"></i> Inventory</a></li>
+                </ul>
+            </li>
+            
+            <li class="nav-item dropdown mt-2 px-3">
+                <a class="btn btn-outline-light dropdown-toggle w-100 text-start border-secondary" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-users-cog me-2 text-success"></i> HR & Payroll
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark w-100 shadow">
+                    <li><h6 class="dropdown-header">Attendance</h6></li>
+                    <li><a class="dropdown-item" href="{% url 'attendance_check_in' %}"><i class="fas fa-sign-in-alt me-2"></i> Clock In</a></li>
+                    <li><a class="dropdown-item" href="{% url 'attendance_check_out' %}"><i class="fas fa-sign-out-alt me-2"></i> Clock Out</a></li>
+                    <li><a class="dropdown-item" href="{% url 'attendance_report' %}"><i class="fas fa-calendar-check me-2"></i> Attendance Report</a></li>
                     
                     <li><hr class="dropdown-divider border-secondary"></li>
-                    <li><h6 class="dropdown-header">Public Site</h6></li>
-                    <li><a class="dropdown-item text-info" href="{% url 'booking_landing' %}" target="_blank">
-                        <i class="fas fa-external-link-alt me-2"></i> Open Booking Site
-                    </a></li>
+                    <li><h6 class="dropdown-header">Payroll</h6></li>
+                    <li><a class="dropdown-item" href="{% url 'payroll_report' %}"><i class="fas fa-money-check-alt me-2"></i> Payroll Report</a></li>
                 </ul>
+            </li>
+            
+            <li class="nav-item mt-2 px-3">
+                <a class="btn btn-outline-info w-100 text-start border-secondary" href="{% url 'booking_landing' %}" target="_blank">
+                    <i class="fas fa-external-link-alt me-2"></i> Public Site
+                </a>
             </li>
         </ul>
 
