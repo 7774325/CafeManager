@@ -175,7 +175,7 @@
         modal.show();
         
         // Simple fetch to a checkout-like preview logic
-        fetch(`/karaoke/rooms/checkout/${sessionId}/`)
+        fetch(`/karaoke/session/checkout/${sessionId}/`)
             .then(response => response.text())
             .then(html => {
                 const parser = new DOMParser();
