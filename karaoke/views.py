@@ -267,7 +267,7 @@ def get_session_bill(request, session_id):
             kitchen_total += float(item.price * item.quantity)
         orders_data.append({
             'id': order.id,
-            'status': order.status,
+            'status': 'Served' if order.is_served else 'Pending',
             'items': order_items,
             'total': float(order.total_price)
         })
