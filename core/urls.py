@@ -2,8 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Main Site Dashboard
-    path('', views.dashboard, name='dashboard'),
+    # Landing page & Dashboard
+    path('', views.homepage, name='homepage'),
+    path('dashboard/', views.dashboard, name='dashboard'),
     
     # POS System
     path('pos/', views.record_sale, name='record_sale'),

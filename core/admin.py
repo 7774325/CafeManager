@@ -5,6 +5,7 @@ from .models import Outlet, Employee, Product, SaleTransaction, SaleItem, Expens
 class OutletAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'location')
     list_display_links = ('id', 'name')
+    fields = ('name', 'owner', 'location', 'logo')
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):

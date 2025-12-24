@@ -292,33 +292,57 @@ def karaoke_list(request):
     active_sessions = RoomSession.objects.filter(outlet=outlet, status__in=['Booked', 'Active', 'Paused'])
     bookings = BookingRequest.objects.filter(status='Pending').order_by('requested_date')
     
-    rooms = [
-        {'name': 'VIP Room A', 'status': 'Available', 'color': 'success'},
-        {'name': 'Standard Room 1', 'status': 'Available', 'color': 'success'},
-    ]
+    # Get actual rooms from database
+    actual_rooms = Room.objects.filter(outlet=outlet)
+    rooms = []
     
-    for room in rooms:
-        session = active_sessions.filter(room_name=room['name']).first()
+    for room in actual_rooms:
+        room_data = {
+            'id': room.id,
+            'name': room.name,
+            'type': room.room_type,
+            'capacity': room.capacity,
+            'status': room.status,
+            'color': 'success' if room.status == 'Available' else 'danger',
+            'price_per_hour': str(room.price_per_hour)
+        }
+        
+        # Check if there's an active session in this room
+        session = active_sessions.filter(room=room).first()
         if session:
-            room.update({
-                'status': 'Occupied', 'color': 'danger', 'session_id': session.id,
+            room_data.update({
+                'status': 'Occupied',
+                'color': 'danger',
+                'session_id': session.id,
                 'customer_name': session.customer_name,
                 'order_total': session.orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
             })
+        
+        rooms.append(room_data)
+    
     return render(request, 'karaoke/rooms.html', {'rooms': rooms, 'bookings': bookings})
 
 @login_required
 def start_session(request):
+    outlet = get_user_outlet(request.user)
     if request.method == 'POST':
-        duration = int(request.POST.get('duration', 60))
-        RoomSession.objects.create(
-            room_name=request.POST.get('room_name'),
+        room_id = request.POST.get('room_id')
+        room = get_object_or_404(Room, id=room_id, outlet=outlet)
+        duration = int(request.POST.get('duration', room.min_booking_duration))
+        
+        session = RoomSession.objects.create(
+            room=room,
+            outlet=outlet,
             customer_name=request.POST.get('customer_name', 'Guest'),
-            end_time=timezone.now() + timedelta(minutes=duration),
-            outlet=get_user_outlet(request.user),
-            status__in=['Booked', 'Active', 'Paused']
+            booked_duration_minutes=duration,
+            base_rate=room.get_hourly_rate(),
+            status='Booked',
+            started_at=timezone.now()
         )
-    return redirect('karaoke_list')
+        return redirect('checkout_session', session_id=session.id)
+    
+    rooms = Room.objects.filter(outlet=outlet, status='Available')
+    return render(request, 'karaoke/start_session.html', {'rooms': rooms})
 
 def customer_tablet_order(request, session_id):
     session = get_object_or_404(RoomSession, id=session_id, status__in=['Booked', 'Active', 'Paused'])

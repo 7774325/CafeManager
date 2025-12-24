@@ -20,26 +20,40 @@ def get_user_outlet(user):
         return Outlet.objects.first()
 
 # --- DASHBOARD ---
+def homepage(request):
+    """Landing page for unauthenticated users."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'core/landing_page.html')
+
 @login_required
 def dashboard(request):
     outlet = get_user_outlet(request.user)
-    # Using the date field we fixed in models
-    sales_qs = SaleTransaction.objects.filter(outlet=outlet)
-    total_sales = sales_qs.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    total_items = Product.objects.filter(outlet=outlet).count()
-    low_stock = Product.objects.filter(outlet=outlet, current_stock_level__lt=10).count()
+    today = date.today()
     
-    # Statistics for the dashboard
-    categories_stats = Product.objects.filter(outlet=outlet).values('category').annotate(count=Count('id')).order_by('category')
-    recent_sales = sales_qs.order_by('-date')[:5]
-
-    return render(request, 'karaoke/dashboard.html', {
-        'outlet': outlet, 
-        'total_sales': total_sales, 
-        'total_items': total_items,
-        'low_stock_count': low_stock, 
-        'categories': categories_stats,
-        'recent_sales': recent_sales
+    # POS Sales today
+    pos_sales = SaleTransaction.objects.filter(outlet=outlet, date__date=today)
+    total_pos_sales = pos_sales.aggregate(Sum('total_amount'))['total_amount__sum'] or Decimal('0')
+    
+    # Karaoke Revenue today (completed sessions only)
+    from karaoke.models import RoomSession
+    karaoke_sessions = RoomSession.objects.filter(outlet=outlet, status='Completed', ended_at__date=today)
+    total_karaoke_revenue = karaoke_sessions.aggregate(Sum('total_charge'))['total_charge__sum'] or Decimal('0')
+    
+    # Total Revenue
+    total_revenue = total_pos_sales + total_karaoke_revenue
+    
+    # Low Stock Items
+    low_stock_items = Product.objects.filter(outlet=outlet, current_stock_level__lt=10).order_by('current_stock_level')[:5]
+    
+    return render(request, 'core/manager_dashboard.html', {
+        'outlet': outlet,
+        'total_pos_sales': total_pos_sales,
+        'total_karaoke_revenue': total_karaoke_revenue,
+        'total_revenue': total_revenue,
+        'low_stock_items': low_stock_items,
+        'today': today,
+        'now': timezone.now()
     })
 
 # --- SALES HISTORY ---
