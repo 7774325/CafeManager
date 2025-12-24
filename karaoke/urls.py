@@ -37,4 +37,5 @@ urlpatterns = [
     # Public Booking
     path('welcome/', views.booking_landing, name='booking_landing'),
     path('welcome/submit/', views.submit_booking_request, name='submit_booking_request'),
+    path('booking/approve/<int:booking_id>/', views.approve_booking, name='approve_booking'),
 ]

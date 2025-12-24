@@ -272,6 +272,16 @@ def submit_booking_request(request):
         return render(request, 'karaoke/booking_success.html', {'name': customer_name})
     return redirect('booking_landing')
 
+@login_required
+def approve_booking(request, booking_id):
+    """Approve a pending booking request."""
+    if request.method == 'POST':
+        booking = get_object_or_404(BookingRequest, id=booking_id)
+        booking.status = 'Approved'
+        booking.save()
+        messages.success(request, f"Booking for {booking.customer_name} has been approved!")
+    return redirect('karaoke_list')
+
 # --- DASHBOARD ---
 @login_required
 def dashboard(request):
@@ -295,7 +305,7 @@ def dashboard(request):
 # --- ROOM SESSIONS & TABLET ORDERING ---
 @login_required
 def karaoke_list(request):
-    outlet = get_user_outlet(request.user)
+    outlet = request.outlet  # Use middleware-provided outlet
     active_sessions = RoomSession.objects.filter(outlet=outlet, status__in=['Booked', 'Active', 'Paused'])
     bookings = BookingRequest.objects.filter(status='Pending').order_by('requested_date')
     
@@ -327,15 +337,27 @@ def karaoke_list(request):
         
         rooms.append(room_data)
     
-    return render(request, 'karaoke/rooms.html', {'rooms': rooms, 'bookings': bookings})
+    # Pass available_rooms for the start session modal
+    available_rooms = Room.objects.filter(outlet=outlet)
+    
+    return render(request, 'karaoke/rooms.html', {
+        'rooms': rooms, 
+        'available_rooms': available_rooms,
+        'bookings': bookings,
+        'currency': CURRENCY
+    })
 
 @login_required
 def start_session(request):
-    outlet = get_user_outlet(request.user)
+    outlet = request.outlet  # Use middleware-provided outlet
     if request.method == 'POST':
         room_id = request.POST.get('room_id')
-        room = get_object_or_404(Room, id=room_id, outlet=outlet)
-        duration = int(request.POST.get('duration', room.min_booking_duration))
+        room = get_object_or_404(Room, id=room_id)
+        duration = int(request.POST.get('duration', 60))
+        
+        # Mark room as active
+        room.status = 'Occupied'
+        room.save()
         
         session = RoomSession.objects.create(
             room=room,
@@ -343,7 +365,7 @@ def start_session(request):
             customer_name=request.POST.get('customer_name', 'Guest'),
             booked_duration_minutes=duration,
             base_rate=room.get_hourly_rate(),
-            status='Booked',
+            status='Active',
             started_at=timezone.now()
         )
         return redirect('checkout_session', session_id=session.id)

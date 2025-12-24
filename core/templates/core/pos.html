@@ -57,17 +57,20 @@
                             <label class="form-label small fw-bold text-uppercase">2. Table / Room Allocation</label>
                             <select id="tableSelect" class="form-select border-warning">
                                 <option value="Counter">Take-away / Counter</option>
-                                <optgroup label="Main Hall">
-                                    <option value="Table 1">Table 1</option>
-                                    <option value="Table 2">Table 2</option>
-                                    <option value="Table 3">Table 3</option>
-                                    <option value="Table 4">Table 4</option>
+                                {% if tables %}
+                                <optgroup label="Dining Tables">
+                                    {% for table in tables %}
+                                    <option value="{{ table.name }}">{{ table.name }}</option>
+                                    {% endfor %}
                                 </optgroup>
+                                {% endif %}
+                                {% if rooms %}
                                 <optgroup label="Karaoke Rooms">
-                                    <option value="VIP A">VIP Room A</option>
-                                    <option value="VIP B">VIP Room B</option>
-                                    <option value="Room 1">Standard 1</option>
+                                    {% for room in rooms %}
+                                    <option value="{{ room.name }}">{{ room.name }}</option>
+                                    {% endfor %}
                                 </optgroup>
+                                {% endif %}
                             </select>
                         </div>
                     </div>

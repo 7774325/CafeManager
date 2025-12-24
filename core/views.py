@@ -128,18 +128,23 @@ def record_sale(request):
     products = Product.objects.filter(outlet=outlet).order_by('name')
     customers = Customer.objects.filter(outlet=outlet).order_by('name')
     
-    # SITA FIX: Get unique category list only
+    # Get unique category list only
     categories = Product.objects.filter(outlet=outlet).values_list('category', flat=True).distinct().order_by('category')
-    categories = [c for c in categories if c] # Remove empty categories
+    categories = [c for c in categories if c]
     
     favorites = products.filter(is_favorite=True)
+    
+    # Get rooms for this outlet (dynamic, not hardcoded)
+    from karaoke.models import Room
+    rooms = Room.objects.filter(outlet=outlet)
     
     return render(request, 'core/pos.html', {
         'products': products,
         'customers': customers,
         'categories': categories,
         'favorites': favorites,
-        'outlet': outlet
+        'outlet': outlet,
+        'rooms': rooms
     })
 
 @login_required
@@ -239,13 +244,7 @@ def receipt_detail(request, transaction_id):
     return render(request, 'karaoke/receipt.html', {'sale': sale})
 
 # --- KARAOKE & TOOLS ---
-@login_required
-def karaoke_list(request):
-    rooms = [
-        {'id': 1, 'name': 'VIP Room A', 'status': 'Available', 'color': 'success'},
-        {'id': 2, 'name': 'Standard Room 1', 'status': 'Occupied', 'color': 'danger'},
-    ]
-    return render(request, 'karaoke/rooms.html', {'rooms': rooms})
+# Note: karaoke_list is in karaoke/views.py - removed duplicate
 
 @login_required
 def bulk_stock_entry(request): return render(request, 'core/bulk_stock.html')

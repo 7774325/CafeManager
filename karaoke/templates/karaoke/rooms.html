@@ -47,7 +47,7 @@
                             <button class="btn btn-sm btn-outline-{{ room.color }}" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#startSessionModal" 
-                                    onclick="setRoomName('{{ room.name }}')">
+                                    onclick="setRoomName('{{ room.id }}')">
                                 Assign Room
                             </button>
                         </div>
@@ -81,7 +81,10 @@
                             <td>{{ booking.requested_date }} at {{ booking.requested_time }}</td>
                             <td>{{ booking.duration_minutes }} mins</td>
                             <td class="text-end pe-4">
-                                <button class="btn btn-sm btn-primary">Approve</button>
+                                <form method="POST" action="{% url 'approve_booking' booking.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary">Approve</button>
+                                </form>
                             </td>
                         </tr>
                         {% empty %}
@@ -159,8 +162,11 @@
 </div>
 
 <script>
-    function setRoomName(name) {
-        document.getElementById('modalRoomSelect').value = name;
+    function setRoomName(roomId) {
+        const select = document.getElementById('modalRoomSelect');
+        if (select) {
+            select.value = roomId;
+        }
     }
 
     // Logic to fetch the current bill items without finishing the session
