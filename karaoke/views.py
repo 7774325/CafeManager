@@ -55,19 +55,34 @@ def karaoke_list(request):
     active_sessions = RoomSession.objects.filter(outlet=outlet, status__in=['Booked', 'Active', 'Paused'])
     bookings = BookingRequest.objects.filter(status='Pending').order_by('requested_date')
     
-    rooms = [
-        {'name': 'VIP Room A', 'status': 'Available', 'color': 'success'},
-        {'name': 'Standard Room 1', 'status': 'Available', 'color': 'success'},
-    ]
+    # Get actual rooms from database
+    actual_rooms = Room.objects.filter(outlet=outlet)
+    rooms = []
     
-    for room in rooms:
-        session = active_sessions.filter(room_name=room['name']).first()
+    for room in actual_rooms:
+        room_data = {
+            'id': room.id,
+            'name': room.name,
+            'type': room.room_type,
+            'capacity': room.capacity,
+            'status': room.status,
+            'color': 'success' if room.status == 'Available' else 'danger',
+            'price_per_hour': str(room.price_per_hour)
+        }
+        
+        # Check if there's an active session in this room
+        session = active_sessions.filter(room=room).first()
         if session:
-            room.update({
-                'status': 'Occupied', 'color': 'danger', 'session_id': session.id,
+            room_data.update({
+                'status': 'Occupied',
+                'color': 'danger',
+                'session_id': session.id,
                 'customer_name': session.customer_name,
                 'order_total': session.orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
             })
+        
+        rooms.append(room_data)
+    
     return render(request, 'karaoke/rooms.html', {'rooms': rooms, 'bookings': bookings, 'currency': CURRENCY})
 
 @login_required
@@ -372,7 +387,7 @@ def checkout_session(request, session_id):
     
     duration = (timezone.now() - session.start_time).total_seconds() / 3600
     hours = max(1, round(duration)) 
-    rate = 150 if "VIP" in session.room_name else 100 
+    rate = 150 if "VIP" in session.room.name else 100 
     room_charge = Decimal(hours * rate)
     kitchen_total = session.orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
     grand_total = room_charge + Decimal(kitchen_total)
