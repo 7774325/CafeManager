@@ -20,7 +20,7 @@
                     <span class="badge bg-white text-{{ room.color }} text-uppercase">{{ room.status }}</span>
                 </div>
                 <div class="card-body">
-                    {% if room.status == 'Occupied' %}
+                    {% if room.session_id %}
                         <div class="mb-3">
                             <small class="text-muted text-uppercase d-block">Customer</small>
                             <span class="fw-bold fs-5">{{ room.customer_name }}</span>
