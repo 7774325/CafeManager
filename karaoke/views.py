@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
-from core.models import Outlet, Product, SaleTransaction, Customer, SaleItem
+from core.models import Outlet, Product, SaleTransaction, Customer, SaleItem, CreditPayment
 from .models import RoomSession, BookingRequest, RoomOrder, RoomOrderItem, Room
 
 # --- CONFIGURATION ---
@@ -45,6 +45,19 @@ def checkout_session(request, session_id):
     session.recalculate_total()
 
     if request.method == 'POST':
+        payment_method = request.POST.get('payment_method', 'Cash')
+        
+        # Credit sales require a linked customer
+        if payment_method == 'Credit' and not session.customer:
+            messages.error(request, "Credit payment requires a registered customer account.")
+            return render(request, 'karaoke/checkout.html', {
+                'session': session, 'room_charge': session.room_charge,
+                'extra_time_charge': session.extra_time_charge,
+                'kitchen_total': session.food_beverage_charge,
+                'grand_total': session.total_charge,
+                'payment_methods': PAYMENT_METHODS, 'currency': CURRENCY
+            })
+        
         session.status = 'Completed'
         session.save()
         
@@ -53,10 +66,16 @@ def checkout_session(request, session_id):
             outlet=outlet, 
             customer=session.customer,
             total_amount=session.total_charge,
-            payment_method=request.POST.get('payment_method', 'Cash'),
+            payment_method=payment_method,
             customer_name=session.customer_name, 
             status='Completed'
         )
+        
+        # Update customer balance for credit sales
+        if payment_method == 'Credit' and session.customer:
+            session.customer.current_balance += session.total_charge
+            session.customer.total_credit += session.total_charge
+            session.customer.save()
         
         # Mark room as available for cleaning
         session.room.status = 'Cleaning'
@@ -313,17 +332,24 @@ def submit_sale(request):
         outlet = get_user_outlet(request.user)
         customer_id = data.get('customer_id')
         customer = Customer.objects.filter(id=customer_id).first() if customer_id else None
+        payment_method = data.get('payment_method', 'Cash')
+        total_amount = Decimal(data.get('total_price'))
+        
+        # Credit sales require a customer
+        if payment_method == 'Credit' and not customer:
+            return JsonResponse({'success': False, 'error': 'Credit sales require a customer account'})
         
         transaction = SaleTransaction.objects.create(
             outlet=outlet,
             customer=customer,
             customer_name=data.get('customer_name', 'Walk-in'),
             table_number=data.get('table_number', 'Counter'),
-            total_amount=Decimal(data.get('total_price')),
-            payment_method=data.get('payment_method', 'Cash'),
+            total_amount=total_amount,
+            payment_method=payment_method,
             status='Completed'
         )
         
+        # Deduct inventory for all payment methods including credit
         for item in data.get('items', []):
             product = Product.objects.get(id=item['id'])
             SaleItem.objects.create(sale=transaction, product=product, quantity=item['quantity'], price=product.selling_price)
@@ -332,6 +358,10 @@ def submit_sale(request):
 
         if customer:
             customer.visit_count += 1
+            # Update customer balance for credit sales
+            if payment_method == 'Credit':
+                customer.current_balance += total_amount
+                customer.total_credit += total_amount
             customer.save()
 
         return JsonResponse({'success': True, 'transaction_id': transaction.id})
@@ -348,6 +378,10 @@ def daily_summary(request):
     cash_total = sales_today.filter(payment_method='Cash').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     card_total = sales_today.filter(payment_method='Card').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
     transfer_total = sales_today.filter(payment_method='Transfer').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    credit_sales = sales_today.filter(payment_method='Credit').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    
+    # Track credit repayments separately (from dedicated CreditPayment model)
+    credit_repayments = CreditPayment.objects.filter(outlet=outlet, date__date=today).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
     
     best_sellers = SaleItem.objects.filter(sale__date__date=today).values('product__name').annotate(total_qty=Sum('quantity')).order_by('-total_qty')[:10]
 
@@ -357,8 +391,40 @@ def daily_summary(request):
         'cash_total': cash_total,
         'card_total': card_total,
         'transfer_total': transfer_total,
+        'credit_sales': credit_sales,
+        'credit_repayments': credit_repayments,
         'best_sellers': best_sellers,
         'recent_sales': sales_today.order_by('-date')[:20]
+    })
+
+# --- CREDIT PAYMENT ---
+@login_required
+def pay_credit(request, customer_id):
+    customer = get_object_or_404(Customer, id=customer_id)
+    outlet = get_user_outlet(request.user)
+    
+    if request.method == 'POST':
+        amount = Decimal(request.POST.get('amount', 0))
+        if amount > 0 and amount <= customer.current_balance:
+            # Reduce outstanding balance
+            customer.current_balance -= amount
+            customer.save()
+            
+            # Record repayment using dedicated CreditPayment model (not SaleTransaction)
+            CreditPayment.objects.create(
+                outlet=outlet,
+                customer=customer,
+                amount_paid=amount,
+                notes=f"Credit payment received via POS"
+            )
+            messages.success(request, f"Payment of {CURRENCY} {amount} received. Remaining balance: {CURRENCY} {customer.current_balance}")
+        else:
+            messages.error(request, "Invalid payment amount.")
+        return redirect('customer_list')
+    
+    return render(request, 'karaoke/pay_credit.html', {
+        'customer': customer,
+        'currency': CURRENCY
     })
 
 # --- KITCHEN & HISTORY ---

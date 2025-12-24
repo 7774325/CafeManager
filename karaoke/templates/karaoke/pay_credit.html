@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Pay Credit - {{ customer.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0" style="background: linear-gradient(135deg, #1a1a2e 0%, #3d3d5c 100%);">
+                <div class="card-header text-center py-4" style="background-color: #CCCCFF; border-radius: 10px 10px 0 0;">
+                    <h3 class="mb-0 text-dark"><i class="fas fa-credit-card me-2"></i> Credit Payment</h3>
+                </div>
+                <div class="card-body p-4 text-white">
+                    <div class="text-center mb-4">
+                        <h4>{{ customer.name }}</h4>
+                        <p class="text-muted mb-2">{{ customer.phone }}</p>
+                        <div class="d-flex justify-content-center gap-4 mt-3">
+                            <div class="text-center">
+                                <small class="text-muted">Total Credit</small>
+                                <h5 class="text-info">{{ currency }} {{ customer.total_credit|floatformat:2 }}</h5>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">Outstanding</small>
+                                <h5 class="text-warning">{{ currency }} {{ customer.current_balance|floatformat:2 }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if customer.current_balance > 0 %}
+                    <form method="post" id="paymentForm">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">Payment Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-white">{{ currency }}</span>
+                                <input type="number" name="amount" step="0.01" min="0.01" max="{{ customer.current_balance }}" 
+                                       class="form-control form-control-lg bg-dark border-secondary text-white" 
+                                       placeholder="Enter amount" required>
+                            </div>
+                            <small class="text-muted">Maximum: {{ currency }} {{ customer.current_balance|floatformat:2 }}</small>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle me-2"></i> Receive Payment
+                            </button>
+                            <button type="button" onclick="document.getElementById('paymentForm').amount.value='{{ customer.current_balance }}'" class="btn btn-outline-info">
+                                <i class="fas fa-wallet me-2"></i> Pay Full Balance
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-success text-center">
+                        <i class="fas fa-check-circle me-2"></i> No outstanding balance
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center py-3">
+                    <a href="{% url 'customer_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Customers
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

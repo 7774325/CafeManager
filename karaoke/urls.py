@@ -29,6 +29,7 @@ urlpatterns = [
     # Customers & Loyalty
     path('customers/', views.customer_list, name='customer_list'),
     path('customers/history/<int:customer_id>/', views.customer_history, name='customer_history'),
+    path('customers/pay-credit/<int:customer_id>/', views.pay_credit, name='pay_credit'),
     
     # Inventory & Tools
     path('low-stock/', views.low_stock_report, name='low_stock_report'),
