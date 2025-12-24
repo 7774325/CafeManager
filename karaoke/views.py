@@ -59,6 +59,9 @@ def karaoke_list(request):
     actual_rooms = Room.objects.filter(outlet=outlet)
     rooms = []
     
+    if not actual_rooms.exists():
+        messages.warning(request, "No rooms found. Please create at least one Room in the Admin panel first.")
+    
     for room in actual_rooms:
         room_data = {
             'id': room.id,
@@ -83,7 +86,15 @@ def karaoke_list(request):
         
         rooms.append(room_data)
     
-    return render(request, 'karaoke/rooms.html', {'rooms': rooms, 'bookings': bookings, 'currency': CURRENCY})
+    # Pass available rooms for the start session modal
+    available_rooms = Room.objects.filter(outlet=outlet, status='Available')
+    
+    return render(request, 'karaoke/rooms.html', {
+        'rooms': rooms, 
+        'available_rooms': available_rooms,
+        'bookings': bookings, 
+        'currency': CURRENCY
+    })
 
 @login_required
 def start_session(request):
