@@ -51,16 +51,13 @@ def dashboard(request):
 # --- ROOM SESSIONS ---
 @login_required
 def karaoke_list(request):
-    outlet = request.outlet  # Use middleware-provided outlet
+    outlet = request.outlet
     active_sessions = RoomSession.objects.filter(outlet=outlet, status__in=['Booked', 'Active', 'Paused'])
     bookings = BookingRequest.objects.filter(status='Pending').order_by('requested_date')
     
-    # Get actual rooms from database
-    actual_rooms = Room.objects.filter(outlet=outlet)
+    # Get all rooms from database
+    actual_rooms = Room.objects.filter(outlet=outlet).select_related('outlet')
     rooms = []
-    
-    if not actual_rooms.exists():
-        messages.warning(request, "No rooms found. Please create at least one Room in the Admin panel first.")
     
     for room in actual_rooms:
         room_data = {
@@ -69,25 +66,23 @@ def karaoke_list(request):
             'type': room.room_type,
             'capacity': room.capacity,
             'status': room.status,
-            'color': 'success' if room.status == 'Available' else 'danger',
+            'color': 'success' if room.status == 'Available' else 'warning',
             'price_per_hour': str(room.price_per_hour)
         }
         
         # Check if there's an active session in this room
         session = active_sessions.filter(room=room).first()
         if session:
-            room_data.update({
-                'status': 'Occupied',
-                'color': 'danger',
-                'session_id': session.id,
-                'customer_name': session.customer_name,
-                'order_total': session.orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
-            })
+            room_data['status'] = 'Occupied'
+            room_data['color'] = 'danger'
+            room_data['session_id'] = session.id
+            room_data['customer_name'] = session.customer_name
+            room_data['order_total'] = session.orders.aggregate(Sum('total_price'))['total_price__sum'] or 0
         
         rooms.append(room_data)
     
-    # Pass available rooms for the start session modal
-    available_rooms = Room.objects.filter(outlet=outlet, status='Available')
+    # Available rooms for modal (ALL rooms, let user choose - they will manage status)
+    available_rooms = Room.objects.filter(outlet=outlet)
     
     return render(request, 'karaoke/rooms.html', {
         'rooms': rooms, 
