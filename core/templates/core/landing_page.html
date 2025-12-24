@@ -3,36 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CafeManager - Café & Karaoke Management System</title>
+    <title>ESPECIALLY FOR YOU - Café & Karaoke Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --lavender-mist: #E6DAF3;
+            --lavender-blue: #CCCCFF;
+            --deep-black: #000000;
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-heading: 'Poppins', 'Inter', sans-serif;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-primary); }
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
+        
         body {
-            background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 40%, var(--lavender-blue) 100%);
             min-height: 100vh;
             color: #333;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .navbar {
-            background: rgba(20, 20, 40, 0.95) !important;
-            border-bottom: 2px solid #8b5cf6;
+            background: rgba(0, 0, 0, 0.95) !important;
+            border-bottom: 2px solid var(--lavender-blue);
         }
-        .navbar-brand { font-weight: 700; color: #8b5cf6 !important; font-size: 1.5rem; }
-        .nav-link { color: #ddd !important; transition: 0.3s; }
-        .nav-link:hover { color: #8b5cf6 !important; }
+        .navbar-brand { 
+            font-family: var(--font-heading);
+            font-weight: 700; 
+            color: var(--lavender-mist) !important; 
+            font-size: 1.5rem; 
+        }
+        .nav-link { 
+            color: #ddd !important; 
+            transition: 0.3s;
+            font-weight: 500;
+        }
+        .nav-link:hover { color: var(--lavender-blue) !important; }
         
         .hero {
-            background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 50%, var(--lavender-blue) 100%);
             color: white;
             padding: 6rem 2rem;
             text-align: center;
-            border-bottom: 4px solid #6d28d9;
+            border-bottom: 4px solid var(--lavender-mist);
         }
         .hero h1 {
             font-size: 3.5rem;
-            font-weight: 800;
+            font-weight: 700;
             margin-bottom: 1rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 0.02em;
         }
         .hero p {
             font-size: 1.3rem;
@@ -40,51 +62,55 @@
             opacity: 0.95;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            background: linear-gradient(135deg, var(--lavender-blue) 0%, var(--lavender-mist) 100%);
             border: none;
             padding: 12px 30px;
             font-weight: 600;
             border-radius: 8px;
             transition: 0.3s;
+            color: var(--deep-black);
         }
         .btn-primary:hover {
-            background: linear-gradient(135deg, #6d28d9 0%, #5b1fb8 100%);
+            background: linear-gradient(135deg, var(--lavender-mist) 0%, #d4c8e8 100%);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 8px 20px rgba(204, 204, 255, 0.4);
+            color: var(--deep-black);
         }
         
         .features {
             padding: 4rem 2rem;
-            background: white;
+            background: linear-gradient(180deg, #f8f6fc 0%, var(--lavender-mist) 100%);
         }
         .feature-card {
             background: white;
             border-radius: 12px;
             padding: 2rem;
             margin-bottom: 2rem;
-            border-left: 4px solid #8b5cf6;
+            border-left: 4px solid var(--lavender-blue);
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transition: transform 0.3s;
         }
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 8px 25px rgba(204, 204, 255, 0.3);
         }
         .feature-card h3 {
-            color: #8b5cf6;
-            font-weight: 700;
+            font-family: var(--font-heading);
+            color: #1a1a2e;
+            font-weight: 600;
             margin-bottom: 1rem;
         }
-        .feature-card p { color: #555; line-height: 1.6; }
+        .feature-card p { color: #555; line-height: 1.7; }
         
         .highlight {
-            background: linear-gradient(135deg, #f5e6ff 0%, #e9d5ff 100%);
+            background: linear-gradient(135deg, var(--lavender-mist) 0%, #f5f0fa 100%);
             padding: 3rem 2rem;
             border-radius: 12px;
             margin: 2rem 0;
-            border: 2px solid #8b5cf6;
+            border: 2px solid var(--lavender-blue);
         }
         .highlight h2 {
+            font-family: var(--font-heading);
             color: #1a1a2e;
             font-weight: 700;
             margin-bottom: 1.5rem;
@@ -97,24 +123,30 @@
             padding: 0.5rem 0;
             padding-left: 2rem;
             position: relative;
+            line-height: 1.7;
         }
         .highlight li:before {
             content: "✓";
             position: absolute;
             left: 0;
-            color: #8b5cf6;
+            color: var(--lavender-blue);
             font-weight: bold;
             font-size: 1.2rem;
         }
         
         footer {
-            background: #1a1a2e;
+            background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 100%);
             color: white;
             padding: 2rem;
             text-align: center;
-            border-top: 2px solid #8b5cf6;
+            border-top: 2px solid var(--lavender-blue);
         }
-        footer p { margin: 0; opacity: 0.8; }
+        footer p { 
+            margin: 0; 
+            opacity: 0.8;
+            font-family: var(--font-heading);
+            letter-spacing: 0.05em;
+        }
         
         .stats {
             display: grid;
@@ -128,12 +160,13 @@
             border-radius: 8px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-top: 4px solid #8b5cf6;
+            border-top: 4px solid var(--lavender-blue);
         }
         .stat-box .number {
+            font-family: var(--font-heading);
             font-size: 2.5rem;
             font-weight: 700;
-            color: #8b5cf6;
+            color: #1a1a2e;
         }
         .stat-box .label {
             color: #666;
@@ -142,7 +175,7 @@
         }
         
         .login-portals {
-            background: #f8f8ff;
+            background: linear-gradient(180deg, #f8f8ff 0%, var(--lavender-mist) 100%);
         }
         .portal-card {
             background: white;
@@ -157,26 +190,28 @@
         }
         .portal-card:hover {
             transform: translateY(-8px);
-            border-color: #8b5cf6;
-            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.25);
+            border-color: var(--lavender-blue);
+            box-shadow: 0 15px 40px rgba(204, 204, 255, 0.35);
         }
-        .portal-card.admin-portal { border-top: 4px solid #8b5cf6; }
+        .portal-card.admin-portal { border-top: 4px solid var(--lavender-blue); }
         .portal-card.client-portal { border-top: 4px solid #22c55e; }
         .portal-icon {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
-            color: white;
+            color: var(--lavender-mist);
         }
         .portal-card.client-portal .portal-icon {
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
         }
         .portal-card h3 {
+            font-family: var(--font-heading);
             color: #1a1a2e;
             font-weight: 700;
             margin-bottom: 0.75rem;
@@ -184,12 +219,12 @@
         .portal-card p {
             color: #666;
             margin-bottom: 1.5rem;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .portal-btn {
             display: inline-block;
-            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 100%);
+            color: var(--lavender-mist);
             padding: 10px 24px;
             border-radius: 8px;
             font-weight: 600;
@@ -197,6 +232,7 @@
         }
         .portal-card.client-portal .portal-btn {
             background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
         }
         .portal-card:hover .portal-btn {
             transform: scale(1.05);
@@ -212,10 +248,9 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="/">🎵 CafeManager</a>
+            <a class="navbar-brand" href="/">ESPECIALLY FOR YOU</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -227,19 +262,17 @@
         </div>
     </nav>
 
-    <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <h1>CafeManager</h1>
+            <h1>ESPECIALLY FOR YOU</h1>
             <p>Enterprise Café & Karaoke Management System</p>
             <p style="font-size: 1rem; opacity: 0.9;">Manage POS, Karaoke Sessions, Inventory & Payroll in one platform</p>
         </div>
     </section>
     
-    <!-- Login Portals -->
     <section class="login-portals py-5">
         <div class="container">
-            <h2 style="text-align: center; color: #1a1a2e; font-weight: 700; margin-bottom: 2rem;">Access Portal</h2>
+            <h2 style="text-align: center; color: #1a1a2e; font-weight: 700; margin-bottom: 2rem; font-family: var(--font-heading);">Access Portal</h2>
             <div class="row justify-content-center g-4">
                 <div class="col-md-4">
                     <div class="portal-card" onclick="window.location='/admin/login/?next=/karaoke/dashboard/'">
@@ -275,10 +308,9 @@
         </div>
     </section>
 
-    <!-- Features -->
     <section class="features">
         <div class="container">
-            <h2 style="text-align: center; color: #1a1a2e; font-weight: 700; margin-bottom: 3rem;">Core Features</h2>
+            <h2 style="text-align: center; color: #1a1a2e; font-weight: 700; margin-bottom: 3rem; font-family: var(--font-heading);">Core Features</h2>
             
             <div class="row">
                 <div class="col-md-6">
@@ -308,11 +340,11 @@
             </div>
 
             <div class="highlight">
-                <h2>Why Choose CafeManager?</h2>
+                <h2>Why Choose ESPECIALLY FOR YOU?</h2>
                 <ul>
                     <li><strong>Multi-Tenant:</strong> Complete data isolation between multiple outlets</li>
                     <li><strong>Real-Time:</strong> Live inventory, POS, and session tracking</li>
-                    <li><strong>Professional:</strong> Beautiful, responsive UI with lavender branding</li>
+                    <li><strong>Professional:</strong> Beautiful, responsive UI with elegant lavender branding</li>
                     <li><strong>Flexible:</strong> Support for three payment structures and custom configurations</li>
                     <li><strong>Scalable:</strong> Built with Django for enterprise-grade reliability</li>
                 </ul>
@@ -339,9 +371,8 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
-        <p>Developed with <span style="color: #8b5cf6;">&#128156;</span> ESPECIALLY FOR YOU</p>
+        <p>&copy; 2025 ESPECIALLY FOR YOU. Crafted with <span style="color: #E6DAF3;">&#128156;</span> by ESPECIALLY FOR YOU</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

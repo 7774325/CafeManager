@@ -4,16 +4,23 @@
 <head>
     <title>Attendance Report - {{ outlet.name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: linear-gradient(135deg, #f5e6ff 0%, #1a1a2e 100%); min-height: 100vh; }
-        .header { background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; }
+        :root { --lavender-mist: #E6DAF3; --lavender-blue: #CCCCFF; --deep-black: #000000; }
+        * { font-family: 'Inter', -apple-system, sans-serif; }
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; }
+        body { background: linear-gradient(180deg, #f8f6fc 0%, var(--lavender-mist) 100%); min-height: 100vh; }
+        .header { background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 50%, var(--lavender-blue) 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; }
         .header h1 { font-weight: 700; margin: 0; }
         .card { border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: none; }
         table { background: white; border-radius: 12px; overflow: hidden; }
-        thead { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; }
+        thead { background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 100%); color: var(--lavender-mist); }
         th { padding: 1rem; font-weight: 600; text-transform: uppercase; font-size: 0.9rem; }
         td { padding: 0.8rem 1rem; vertical-align: middle; }
-        tbody tr:hover { background-color: #f9f7ff; }
+        tbody tr:hover { background-color: #f5f0fa; }
+        .btn-primary { background: linear-gradient(135deg, var(--lavender-blue) 0%, var(--lavender-mist) 100%); border: none; color: var(--deep-black); font-weight: 500; }
     </style>
 </head>
 <body>
@@ -65,8 +72,8 @@
             </table>
         </div>
         
-        <footer class="text-center py-4 mt-4" style="background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%); border-radius: 12px; border-top: 2px solid #8b5cf6;">
-            <p class="mb-0 text-white-50 small">Developed with <span style="color: #8b5cf6;">&#128156;</span> ESPECIALLY FOR YOU</p>
+        <footer class="text-center py-4 mt-4" style="background: linear-gradient(135deg, #000000 0%, #1a1a2e 100%); border-radius: 12px; border-top: 2px solid #CCCCFF;">
+            <p class="mb-0 text-white-50 small" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">&copy; 2025 ESPECIALLY FOR YOU. Crafted with <span style="color: #E6DAF3;">&#128156;</span> by ESPECIALLY FOR YOU</p>
         </footer>
     </div>
 </body>

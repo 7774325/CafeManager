@@ -1,9 +1,11 @@
 :root {
+    --lavender-mist: #E6DAF3;
+    --lavender-blue: #CCCCFF;
     --primary-lavender: #CCCCFF;
-    --primary-dark: #1a1a2e;
-    --lavender-accent: #8b5cf6;
-    --gradient-start: #1a1a2e;
-    --gradient-end: #3d3d5c;
+    --primary-dark: #000000;
+    --lavender-accent: #CCCCFF;
+    --gradient-start: #000000;
+    --gradient-end: #1a1a2e;
 }
 
 #header {
@@ -36,20 +38,24 @@ div#content-main, #changelist {
 }
 
 .button, input[type="submit"], input[type="button"], .submit-row input {
-    background: linear-gradient(135deg, var(--lavender-accent) 0%, #6d28d9 100%) !important;
+    background: linear-gradient(135deg, var(--lavender-blue) 0%, var(--lavender-mist) 100%) !important;
     border: none !important;
-    color: white !important;
+    color: var(--primary-dark) !important;
     padding: 8px 15px;
     border-radius: 4px;
     font-weight: 600;
 }
 
 .button:hover, input[type="submit"]:hover, input[type="button"]:hover {
-    background: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%) !important;
+    background: linear-gradient(135deg, var(--lavender-mist) 0%, #d4c8e8 100%) !important;
 }
 
 a.button, a.button:visited {
-    color: white !important;
+    color: var(--primary-dark) !important;
+}
+
+a.button:hover {
+    color: var(--primary-dark) !important;
 }
 
 .deletelink {
@@ -89,11 +95,12 @@ body.login #header h1 a {
 }
 
 body.login .submit-row input {
-    background: linear-gradient(135deg, var(--lavender-accent) 0%, #6d28d9 100%) !important;
+    background: linear-gradient(135deg, var(--lavender-blue) 0%, var(--lavender-mist) 100%) !important;
     width: 100%;
     padding: 12px;
     font-size: 16px;
     border-radius: 6px;
+    color: var(--primary-dark) !important;
 }
 
 #nav-sidebar {
