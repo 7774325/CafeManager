@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CafeManager - Café & Karaoke Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: rgba(20, 20, 40, 0.95) !important;
+            border-bottom: 2px solid #8b5cf6;
+        }
+        .navbar-brand { font-weight: 700; color: #8b5cf6 !important; font-size: 1.5rem; }
+        .nav-link { color: #ddd !important; transition: 0.3s; }
+        .nav-link:hover { color: #8b5cf6 !important; }
+        
+        .hero {
+            background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%);
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid #6d28d9;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #6d28d9 0%, #5b1fb8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .features {
+            padding: 4rem 2rem;
+            background: white;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #8b5cf6;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
+        }
+        .feature-card h3 {
+            color: #8b5cf6;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .feature-card p { color: #555; line-height: 1.6; }
+        
+        .highlight {
+            background: linear-gradient(135deg, #f5e6ff 0%, #e9d5ff 100%);
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            border: 2px solid #8b5cf6;
+        }
+        .highlight h2 {
+            color: #1a1a2e;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .highlight ul {
+            list-style: none;
+            color: #333;
+        }
+        .highlight li {
+            padding: 0.5rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+        .highlight li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #8b5cf6;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-top: 2px solid #8b5cf6;
+        }
+        footer p { margin: 0; opacity: 0.8; }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        .stat-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 4px solid #8b5cf6;
+        }
+        .stat-box .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #8b5cf6;
+        }
+        .stat-box .label {
+            color: #666;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎵 CafeManager</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="ms-auto">
+                    <a class="nav-link" href="/admin/login/">Manager Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>CafeManager</h1>
+            <p>Enterprise Café & Karaoke Management System</p>
+            <p style="font-size: 1rem; opacity: 0.9;">Manage POS, Karaoke Sessions, Inventory & Payroll in one platform</p>
+            <a href="/admin/login/" class="btn btn-primary btn-lg">Get Started</a>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2 style="text-align: center; color: #1a1a2e; font-weight: 700; margin-bottom: 3rem;">Core Features</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h3>🛒 POS System</h3>
+                        <p>Interactive product grid with real-time cart, automatic stock deduction, and multiple payment methods. Perfect for counter sales and dine-in operations.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h3>🎤 Karaoke Management</h3>
+                        <p>Room booking with duration-based billing, session control, and F&B ordering from tablets. Support for VIP and standard rooms with flexible rates.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h3>📦 Inventory Tracking</h3>
+                        <p>Real-time stock management with low-stock alerts. Track purchases, sales, adjustments, spoilage, and transfers automatically.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="feature-card">
+                        <h3>👥 HR & Payroll</h3>
+                        <p>Employee profiles with three payment structures: Permanent (fixed), Commission-based, and Daily-rated. Attendance tracking and automated payroll calculation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <h2>Why Choose CafeManager?</h2>
+                <ul>
+                    <li><strong>Multi-Tenant:</strong> Complete data isolation between multiple outlets</li>
+                    <li><strong>Real-Time:</strong> Live inventory, POS, and session tracking</li>
+                    <li><strong>Professional:</strong> Beautiful, responsive UI with lavender branding</li>
+                    <li><strong>Flexible:</strong> Support for three payment structures and custom configurations</li>
+                    <li><strong>Scalable:</strong> Built with Django for enterprise-grade reliability</li>
+                </ul>
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="number">∞</div>
+                    <div class="label">Outlets</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">Real-time</div>
+                    <div class="label">Sync</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">3</div>
+                    <div class="label">Payment Types</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number">24/7</div>
+                    <div class="label">Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 CafeManager - Enterprise Café & Karaoke Management. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -7,6 +7,7 @@ class Outlet(models.Model):
     name = models.CharField(max_length=100)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='outlets')
     location = models.CharField(max_length=255, blank=True, null=True)
+    logo = models.ImageField(upload_to='outlet_logos/', blank=True, null=True, help_text="Upload outlet logo/branding image")
 
     def __str__(self):
         return self.name

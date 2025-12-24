@@ -66,7 +66,7 @@ def dashboard(request):
 @login_required
 def karaoke_list(request):
     outlet = get_user_outlet(request.user)
-    active_sessions = RoomSession.objects.filter(outlet=outlet, is_active=True)
+    active_sessions = RoomSession.objects.filter(outlet=outlet, status__in=['Booked', 'Active', 'Paused'])
     bookings = BookingRequest.objects.filter(status='Pending').order_by('requested_date')
     
     rooms = [
@@ -289,7 +289,7 @@ def dashboard(request):
 @login_required
 def karaoke_list(request):
     outlet = get_user_outlet(request.user)
-    active_sessions = RoomSession.objects.filter(outlet=outlet, is_active=True)
+    active_sessions = RoomSession.objects.filter(outlet=outlet, status__in=['Booked', 'Active', 'Paused'])
     bookings = BookingRequest.objects.filter(status='Pending').order_by('requested_date')
     
     rooms = [
@@ -316,12 +316,12 @@ def start_session(request):
             customer_name=request.POST.get('customer_name', 'Guest'),
             end_time=timezone.now() + timedelta(minutes=duration),
             outlet=get_user_outlet(request.user),
-            is_active=True
+            status__in=['Booked', 'Active', 'Paused']
         )
     return redirect('karaoke_list')
 
 def customer_tablet_order(request, session_id):
-    session = get_object_or_404(RoomSession, id=session_id, is_active=True)
+    session = get_object_or_404(RoomSession, id=session_id, status__in=['Booked', 'Active', 'Paused'])
     products = Product.objects.filter(outlet=session.outlet).exclude(category='Room Rate')
     return render(request, 'karaoke/tablet_order.html', {'session': session, 'products': products})
 
@@ -388,7 +388,7 @@ def checkout_session(request, session_id):
             customer_record.visit_count += 1
             customer_record.save()
 
-        session.is_active = False
+        session.status = 'Completed'
         session.save()
         messages.success(request, f"Bill settled: MVR {submitted_amount}")
         return redirect('karaoke_list')

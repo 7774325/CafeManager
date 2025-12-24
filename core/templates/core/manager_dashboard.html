@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manager Dashboard - {{ outlet.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #f5e6ff 0%, #1a1a2e 100%); min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #8b5cf6 0%, #1a1a2e 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; }
+        .header h1 { font-weight: 700; margin: 0; }
+        .dashboard-card { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 4px solid #8b5cf6; }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: #8b5cf6; }
+        .stat-label { color: #666; font-size: 0.95rem; margin-top: 0.5rem; }
+        .alert-box { background: #fff3cd; border-left: 4px solid #ff9800; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; }
+        .alert-box h5 { color: #ff6f00; margin-bottom: 1rem; font-weight: 700; }
+        .alert-item { padding: 0.5rem 0; color: #333; }
+        .btn-group { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+        .btn-group a { flex: 1; min-width: 150px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>📊 Manager Dashboard</h1>
+            <p>{{ outlet.name }} - {{ today }}</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="dashboard-card">
+                    <div class="stat-label">Total POS Sales (Today)</div>
+                    <div class="stat-value">MVR {{ total_pos_sales|floatformat:2 }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card">
+                    <div class="stat-label">Total Karaoke Revenue (Today)</div>
+                    <div class="stat-value">MVR {{ total_karaoke_revenue|floatformat:2 }}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-card">
+                    <div class="stat-label">Total Revenue (Today)</div>
+                    <div class="stat-value">MVR {{ total_revenue|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="dashboard-card">
+            <h4 style="color: #8b5cf6; font-weight: 700; margin-bottom: 1.5rem;">⚠️ Low Stock Alerts</h4>
+            {% if low_stock_items %}
+                {% for item in low_stock_items %}
+                    <div class="alert-box">
+                        <h5>{{ item.name }}</h5>
+                        <div class="alert-item"><strong>Category:</strong> {{ item.category }}</div>
+                        <div class="alert-item"><strong>Current Stock:</strong> {{ item.current_stock_level }} units</div>
+                        <div class="alert-item"><strong>Cost Price:</strong> MVR {{ item.cost_price }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #666; text-align: center; padding: 2rem;">✅ All stock levels are healthy!</p>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="dashboard-card">
+            <h4 style="color: #8b5cf6; font-weight: 700; margin-bottom: 1rem;">Quick Actions</h4>
+            <div class="btn-group">
+                <a href="{% url 'pos' %}" class="btn btn-primary">🛒 Open POS</a>
+                <a href="{% url 'karaoke_list' %}" class="btn btn-primary">🎤 Karaoke Sessions</a>
+                <a href="{% url 'attendance_report' %}" class="btn btn-primary">📋 Attendance</a>
+                <a href="{% url 'payroll_report' %}" class="btn btn-primary">💰 Payroll</a>
+            </div>
+        </div>
+
+        <!-- Bottom Info -->
+        <div style="text-align: center; padding: 2rem; color: #666;">
+            <p>Last updated: {{ now|date:"Y-m-d H:i" }} | Outlet: {{ outlet.name }}</p>
+        </div>
+    </div>
+</body>
+</html>
