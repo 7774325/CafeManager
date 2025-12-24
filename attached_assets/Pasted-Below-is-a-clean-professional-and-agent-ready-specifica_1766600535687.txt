@@ -1,0 +1,259 @@
+Below is a **clean, professional, and agent-ready specification amendment and instruction set**, fully aligned with your **CKMS Master Specification**, your Loyverse-inspired expectations, and the additional clarification about **credit billing, settlement logic, and inventory behavior**.
+This is written so an AI agent or senior developer can clearly understand *exactly* what you want, without confusion, repetition, or ambiguity.
+
+---
+
+## CKMS – Feature Enhancement & Design Alignment Directive
+
+**(Loyverse-Inspired, Not a Replica)**
+
+### Purpose of This Amendment
+
+This directive enhances the existing **Café & Karaoke Management System (CKMS)** specification. The system is **inspired by the usability and clarity of Loyverse**, but must remain **more advanced, more flexible, and purpose-built**, especially for karaoke room lifecycle management and real-time billing.
+
+This is **not** a clone of Loyverse. CKMS is expected to exceed it in scope, flexibility, and business intelligence.
+
+---
+
+## 1. UI / UX CONSISTENCY & PROFESSIONAL DESIGN (CRITICAL)
+
+### Mandatory Design Standards
+
+* Every page must follow a **single, unified design language**.
+* No page should look heavier, bolder, or stylistically unrelated to another.
+* Layouts for:
+
+  * Dashboard
+  * Billing history
+  * Customer profiles
+  * Receipts
+  * Reports
+  * Admin panel
+    must feel visually connected and professionally structured.
+
+### Theme Enforcement
+
+* Primary color: **#CCCCFF**
+* Secondary: **Black gradient**
+* Theme must be applied **globally**, including:
+
+  * Admin panel
+  * POS
+  * Reports
+  * Tablet UI
+  * Booking pages
+* No partial or mixed themes allowed.
+
+### Navigation Cleanup
+
+* Remove duplicate or misleading navigation items.
+* No two links should route to the same page unless intentionally grouped.
+* Navigation must reflect clear user intent and role (Admin, Staff, Customer).
+
+### Responsiveness
+
+* Fully responsive on:
+
+  * Mobile
+  * Tablet
+  * Laptop
+  * Desktop
+* Admin panel readability is mandatory. Dense or cluttered layouts are unacceptable.
+
+---
+
+## 2. POS LOGIC – “LOYVERSE+, BUT BETTER”
+
+### Payment & Billing Rules (Very Important)
+
+* **No artificial limits**:
+
+  * Payment methods
+  * Number of tables
+  * Products
+  * Outlets
+* Support:
+
+  * Cash
+  * Card
+  * Wallets
+  * Split payments
+  * Room + F&B combined bills
+
+### Credit Billing (Key Clarification)
+
+CKMS **must support credit billing**, unlike Loyverse.
+
+**Professional definition of expected behavior:**
+
+* Trusted customers may be allowed to purchase on credit.
+* When an item is saved as a **credit sale**:
+
+  * Inventory must be deducted immediately.
+  * The sale is recorded as *credited*, not *pending*.
+* During **daily shift close / settlement**:
+
+  * There must be **zero pending bills** in the billing screen.
+  * Credit sales are treated as *account receivables*, not open transactions.
+* Settlement logic:
+
+  * Cash/card totals must reconcile exactly.
+  * Credit totals are logged separately for reporting and customer account tracking.
+* No unpaid or hanging bills are allowed to block shift closing.
+
+This must be reflected clearly in:
+
+* POS behavior
+* Reports
+* Inventory movement
+* Financial summaries
+
+---
+
+## 3. KARAOKE & ROOM SYSTEM (CORE DIFFERENTIATOR)
+
+The Karaoke module is a **first-class system**, not an add-on.
+
+### Room Lifecycle (Mandatory)
+
+```
+Available → Booked → Active → Cleaning → Available
+```
+
+### Tablet Ordering (In-Room)
+
+* Customers can:
+
+  * Browse menu
+  * Place kitchen orders
+  * See live bill updates
+* Bills update in real time using **WebSockets (Django Channels)**.
+* Once staff approves orders:
+
+  * Customers immediately see updated totals.
+
+### Session Integrity
+
+* Time-based billing must:
+
+  * Pause / resume
+  * Add extra time
+  * Sync with POS
+* Room charges + F&B must merge seamlessly in billing.
+
+---
+
+## 4. INVENTORY & FINANCIAL INTELLIGENCE
+
+### Inventory Rules
+
+* Inventory deducts:
+
+  * On finalized sales
+  * On credited sales
+* Inventory is **outlet-specific**.
+* Cross-outlet transfers must be auditable.
+
+### Reporting
+
+* Real-time Profit & Loss:
+
+  * Revenue (Sales + Room fees)
+  * Expenses (Payroll, Utilities, Stock)
+* Credit sales must appear clearly in financial reports.
+* No ambiguity between paid vs credited revenue.
+
+---
+
+## 5. MULTI-OUTLET & BRANDING SYSTEM
+
+### Independent Outlet Portals
+
+When an admin creates a new outlet:
+
+* They must configure:
+
+  * Outlet name
+  * Logo
+  * Theme
+  * Invoice / receipt branding
+  * Public landing page
+  * Employee login page
+  * Client login page
+
+Each outlet:
+
+* Operates independently
+* Has isolated data
+* Shares global visibility only with Super Admin
+
+---
+
+## 6. ADMIN EXPERIENCE (NON-NEGOTIABLE)
+
+* Admin panel must be:
+
+  * Clean
+  * Readable
+  * Logically grouped
+* Admin must be able to:
+
+  * Preview public pages
+  * Preview tablet UI
+  * Preview booking flows
+  * Verify branding per outlet
+* Nothing should feel hidden or “developer-only”.
+
+---
+
+## 7. CODE QUALITY & DOCUMENTATION
+
+* Every Python, HTML, JS, and WebSocket block must include:
+
+  * Simple, human-readable comments
+  * Explanation of purpose and usage
+* Especially required for:
+
+  * consumers.py
+  * billing logic
+  * settlement logic
+  * inventory deduction
+
+---
+
+## 8. FOOTER & OWNERSHIP BRANDING
+
+Replace all default credits with:
+
+**“Developed with 💜 ESPECIALLY FOR YOU”**
+
+(Use a purple-blue heart icon in UI, not text)
+
+---
+
+## 9. FINAL EXPECTATION
+
+CKMS must feel like:
+
+* A **modern, enterprise-grade hospitality platform**
+* Easy enough for non-technical users
+* Powerful enough for owners and auditors
+* Visually consistent, calm, and professional
+
+If Loyverse feels *simple*, CKMS should feel *simple but complete*.
+
+---
+
+### Instruction to the AI Agent
+
+Use this document **together with the original CKMS Master Specification**.
+Do not remove existing features.
+Refactor, enhance, and align behavior, UI, and logic to match this directive exactly.
+
+---
+
+If you want next:
+
+* I can turn this into a **gap analysis checklist**
+* Or a **developer task breakdown (Sprint-ready)**
+* Or a **UI/UX acceptance test document**
