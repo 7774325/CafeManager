@@ -1,42 +1,147 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+    .stat-card {
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        height: 100%;
+        border: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+    .stat-card-primary {
+        background: var(--gradient-hero);
+        color: white;
+    }
+    .stat-card-white {
+        background: white;
+        box-shadow: var(--shadow-card);
+    }
+    .stat-card-alert {
+        background: white;
+        box-shadow: var(--shadow-card);
+        border-left: 4px solid #EF4444 !important;
+    }
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.8;
+        margin-bottom: 0.5rem;
+    }
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .section-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+    }
+    .section-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--ivory-beige);
+    }
+    .section-title {
+        font-weight: 700;
+        font-size: 1rem;
+        margin: 0;
+        color: var(--text-primary);
+    }
+    .section-title i {
+        color: var(--purple-blue);
+    }
+    .table-modern th {
+        background: var(--ivory-beige);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        padding: 0.875rem 1rem;
+        border: none;
+    }
+    .table-modern td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-light);
+        vertical-align: middle;
+    }
+    .table-modern tbody tr:hover {
+        background: var(--pale-sky);
+    }
+    .category-item {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .category-item:last-child {
+        border-bottom: none;
+    }
+    .category-badge {
+        background: var(--pale-sky);
+        color: var(--purple-blue);
+        padding: 0.375rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .pending-banner {
+        background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+        border: none;
+        padding: 1rem 1.25rem;
+    }
+    .pending-banner a {
+        color: #92400E;
+        font-weight: 600;
+        text-decoration: none;
+    }
+</style>
+
 <div class="container-fluid p-4">
     <div class="mb-4 d-flex justify-content-between align-items-center">
         <div>
-            <h2 class="mb-0">Welcome back, {{ user.username }}!</h2>
-            <p class="text-muted">Here is what's happening at CHILLO today.</p>
+            <h2 class="mb-1 fw-bold" style="color: var(--text-primary);">Welcome back, {{ user.username }}!</h2>
+            <p class="mb-0" style="color: var(--text-muted);">Here's what's happening today.</p>
         </div>
-        <div class="text-end">
-            <span class="badge bg-light text-dark border p-2">
-                <i class="fas fa-calendar-alt me-1"></i> {% now "jS F Y" %}
+        <div>
+            <span class="badge px-3 py-2" style="background: var(--ivory-beige); color: var(--text-primary); font-size: 0.85rem;">
+                <i class="fas fa-calendar-alt me-2" style="color: var(--purple-blue);"></i>{% now "jS F Y" %}
             </span>
         </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row g-4 mb-4">
         <div class="col-md-4">
-            <div class="card bg-primary text-white shadow-sm p-3 h-100 border-0">
-                <small class="text-uppercase fw-bold opacity-75">Total Sales Today</small>
-                <div class="d-flex align-items-baseline">
-                    <h2 class="display-6 fw-bold mb-0">MVR {{ total_sales }}</h2>
-                </div>
+            <div class="stat-card stat-card-primary">
+                <div class="stat-label">Total Sales Today</div>
+                <div class="stat-value">MVR {{ total_sales }}</div>
             </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card bg-white shadow-sm p-3 border-0 h-100">
-                <small class="text-uppercase text-muted fw-bold">Total Products</small>
-                <h2 class="display-6 fw-bold text-dark mb-0">{{ total_products }}</h2>
+            <div class="stat-card stat-card-white">
+                <div class="stat-label" style="color: var(--text-muted);">Total Products</div>
+                <div class="stat-value" style="color: var(--text-primary);">{{ total_products }}</div>
             </div>
         </div>
 
         <div class="col-md-4">
             <a href="{% url 'low_stock_report' %}" class="text-decoration-none">
-                <div class="card bg-white shadow-sm p-3 border-0 h-100 border-start border-danger border-4">
-                    <small class="text-uppercase text-muted fw-bold">Low Stock Items</small>
-                    <div class="d-flex align-items-center justify-content-between">
-                        <h2 class="display-6 fw-bold text-danger mb-0">{{ low_stock_count }}</h2>
-                        <div class="text-danger text-center">
+                <div class="stat-card stat-card-alert">
+                    <div class="stat-label" style="color: var(--text-muted);">Low Stock Items</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="stat-value" style="color: #EF4444;">{{ low_stock_count }}</div>
+                        <div class="text-center" style="color: #EF4444;">
                             <i class="fas fa-exclamation-triangle fa-2x"></i>
                             <div class="small fw-bold mt-1">RESTOCK</div>
                         </div>
@@ -46,38 +151,36 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
         <div class="col-md-8">
-            <div class="card shadow-sm border-0 mb-4 h-100">
-                <div class="card-header bg-white py-3 border-0">
-                    <h5 class="mb-0 fw-bold text-danger">
+            <div class="section-card h-100">
+                <div class="section-header">
+                    <h5 class="section-title">
                         <i class="fas fa-fire me-2"></i>Hot Picks (Room Orders)
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     {% if hot_picks %}
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Item Name</th>
-                                        <th class="text-end">Quantity Sold</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in hot_picks %}
-                                    <tr>
-                                        <td class="fw-semibold">{{ item.product__name }}</td>
-                                        <td class="text-end fw-bold text-primary">{{ item.total_qty }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                        <table class="table table-modern mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th class="text-end">Quantity Sold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in hot_picks %}
+                                <tr>
+                                    <td class="fw-semibold">{{ item.product__name }}</td>
+                                    <td class="text-end fw-bold" style="color: var(--purple-blue);">{{ item.total_qty }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     {% else %}
                         <div class="text-center py-5">
-                            <i class="fas fa-chart-line fa-3x text-light mb-3"></i>
-                            <p class="text-muted">No room orders recorded yet today.</p>
+                            <i class="fas fa-chart-line fa-3x mb-3" style="color: var(--border-medium);"></i>
+                            <p style="color: var(--text-muted);">No room orders recorded yet today.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -85,23 +188,25 @@
         </div>
 
         <div class="col-md-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white py-3 border-0">
-                    <h5 class="mb-0 fw-bold text-dark">Menu Breakdown</h5>
+            <div class="section-card h-100 d-flex flex-column">
+                <div class="section-header">
+                    <h5 class="section-title">
+                        <i class="fas fa-list me-2"></i>Menu Breakdown
+                    </h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush">
-                        {% for cat in categories %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center py-3">
-                            <span>{{ cat.category }}</span>
-                            <span class="badge bg-light text-dark border rounded-pill">{{ cat.item_count }} items</span>
-                        </div>
-                        {% endfor %}
+                <div class="flex-grow-1">
+                    {% for cat in categories %}
+                    <div class="category-item">
+                        <span style="color: var(--text-primary);">{{ cat.category }}</span>
+                        <span class="category-badge">{{ cat.item_count }} items</span>
                     </div>
+                    {% empty %}
+                    <div class="text-center py-4" style="color: var(--text-muted);">No categories yet</div>
+                    {% endfor %}
                 </div>
                 {% if pending_bookings_count > 0 %}
-                <div class="card-footer bg-warning-subtle border-0 text-center py-3">
-                    <a href="{% url 'karaoke_list' %}" class="text-warning-emphasis fw-bold text-decoration-none">
+                <div class="pending-banner text-center">
+                    <a href="{% url 'karaoke_list' %}">
                         <i class="fas fa-clock me-1"></i> You have {{ pending_bookings_count }} pending bookings
                     </a>
                 </div>

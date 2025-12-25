@@ -1,130 +1,325 @@
 :root {
-    --lavender-mist: #E6DAF3;
-    --lavender-blue: #CCCCFF;
-    --primary-lavender: #CCCCFF;
-    --primary-dark: #000000;
-    --lavender-accent: #CCCCFF;
-    --gradient-start: #000000;
-    --gradient-end: #1a1a2e;
+    --soft-lavender: #A8AFED;
+    --light-periwinkle: #D1D8FF;
+    --pale-sky: #DEE6FC;
+    --pastel-aqua: #ADDCED;
+    --cream-white: #FFFDF5;
+    --ivory-beige: #F2EFE6;
+    --dark-gray: #333333;
+    --true-black: #000000;
+    --purple-blue: #7D84E4;
+    --gradient-start: #1a1a2e;
+    --gradient-end: #3d3d5c;
 }
 
 #header {
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%) !important;
-    border-bottom: 3px solid var(--primary-lavender);
+    border-bottom: 3px solid var(--soft-lavender);
 }
 
 #header h1, #header a:link, #header a:visited, #header #user-tools a {
-    color: var(--primary-lavender) !important;
+    color: var(--light-periwinkle) !important;
 }
 
 #branding h1, #branding h1 a:link {
-    color: var(--primary-lavender) !important;
+    color: var(--soft-lavender) !important;
     font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .module h2, .module caption, .inline-group h2 {
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%) !important;
-    color: var(--primary-lavender) !important;
+    color: var(--light-periwinkle) !important;
     border: none;
-}
-
-div#content-main, #changelist {
-    background: #f8f8ff;
-}
-
-#changelist-filter h2, #changelist-filter h3 {
-    background: var(--primary-dark) !important;
-    color: var(--primary-lavender) !important;
-}
-
-.button, input[type="submit"], input[type="button"], .submit-row input {
-    background: linear-gradient(135deg, var(--lavender-blue) 0%, var(--lavender-mist) 100%) !important;
-    border: none !important;
-    color: var(--primary-dark) !important;
-    padding: 8px 15px;
-    border-radius: 4px;
     font-weight: 600;
 }
 
+div#content-main, #changelist {
+    background: var(--cream-white);
+}
+
+#content {
+    background: var(--cream-white);
+}
+
+#changelist-filter h2, #changelist-filter h3 {
+    background: var(--dark-gray) !important;
+    color: var(--light-periwinkle) !important;
+}
+
+#changelist-filter {
+    background: var(--ivory-beige);
+    border-radius: 8px;
+}
+
+.button, input[type="submit"], input[type="button"], .submit-row input {
+    background: linear-gradient(135deg, var(--soft-lavender) 0%, var(--purple-blue) 100%) !important;
+    border: none !important;
+    color: white !important;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(125, 132, 228, 0.3);
+}
+
 .button:hover, input[type="submit"]:hover, input[type="button"]:hover {
-    background: linear-gradient(135deg, var(--lavender-mist) 0%, #d4c8e8 100%) !important;
+    background: linear-gradient(135deg, var(--purple-blue) 0%, var(--soft-lavender) 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(125, 132, 228, 0.4);
 }
 
 a.button, a.button:visited {
-    color: var(--primary-dark) !important;
+    color: white !important;
 }
 
 a.button:hover {
-    color: var(--primary-dark) !important;
+    color: white !important;
 }
 
 .deletelink {
     background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    color: white !important;
 }
 
-tr.row1 { background: #f0f0ff; }
-tr.row2 { background: #fff; }
-tr:hover { background: #e8e8ff !important; }
+.default {
+    background: linear-gradient(135deg, var(--purple-blue) 0%, var(--soft-lavender) 100%) !important;
+}
+
+tr.row1 { background: var(--cream-white); }
+tr.row2 { background: white; }
+tr:hover { background: var(--pale-sky) !important; }
+
+th {
+    background: var(--ivory-beige) !important;
+    color: var(--dark-gray) !important;
+    font-weight: 600;
+}
 
 .model-room a, .model-product a, .model-customer a {
-    color: var(--lavender-accent) !important;
+    color: var(--purple-blue) !important;
 }
 
 a:link, a:visited {
-    color: var(--lavender-accent);
+    color: var(--purple-blue);
+}
+
+a:hover {
+    color: var(--soft-lavender);
+}
+
+.module {
+    border: 1px solid var(--pale-sky);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.dashboard #content {
+    background: var(--cream-white);
+}
+
+.dashboard .module table th {
+    background: var(--ivory-beige) !important;
 }
 
 body.login {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, #2d2d4a 100%);
+    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+    min-height: 100vh;
 }
 
 body.login #container {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    border-top: 4px solid var(--primary-lavender);
+    border-radius: 16px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+    border-top: 4px solid var(--soft-lavender);
+    max-width: 420px;
 }
 
 body.login #header {
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-    border-radius: 8px 8px 0 0;
+    border-radius: 12px 12px 0 0;
+    padding: 24px;
 }
 
 body.login #header h1 a {
-    color: var(--primary-lavender) !important;
+    color: var(--light-periwinkle) !important;
+    font-size: 1.5rem;
+}
+
+body.login .form-row {
+    padding: 12px 0;
+}
+
+body.login .form-row label {
+    color: var(--dark-gray);
+    font-weight: 600;
+}
+
+body.login .form-row input[type="text"],
+body.login .form-row input[type="password"] {
+    border: 2px solid var(--pale-sky);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+body.login .form-row input[type="text"]:focus,
+body.login .form-row input[type="password"]:focus {
+    border-color: var(--soft-lavender);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(168, 175, 237, 0.2);
 }
 
 body.login .submit-row input {
-    background: linear-gradient(135deg, var(--lavender-blue) 0%, var(--lavender-mist) 100%) !important;
+    background: linear-gradient(135deg, var(--soft-lavender) 0%, var(--purple-blue) 100%) !important;
     width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 6px;
-    color: var(--primary-dark) !important;
+    padding: 14px;
+    font-size: 1rem;
+    border-radius: 8px;
+    color: white !important;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+body.login .submit-row input:hover {
+    background: linear-gradient(135deg, var(--purple-blue) 0%, var(--soft-lavender) 100%) !important;
 }
 
 #nav-sidebar {
-    background: linear-gradient(180deg, var(--primary-dark) 0%, #2d2d4a 100%);
+    background: linear-gradient(180deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+}
+
+#nav-sidebar .module {
+    border: none;
+    border-radius: 0;
 }
 
 #nav-sidebar .module h2 {
-    color: var(--primary-lavender) !important;
+    color: var(--light-periwinkle) !important;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 12px 16px;
 }
 
 #nav-sidebar .module th {
     background: transparent !important;
+    padding: 8px 16px;
 }
 
 #nav-sidebar a:link, #nav-sidebar a:visited {
-    color: #ddd !important;
+    color: rgba(255,255,255,0.75) !important;
+    transition: all 0.2s;
 }
 
 #nav-sidebar a:hover {
-    color: var(--primary-lavender) !important;
+    color: var(--soft-lavender) !important;
+    padding-left: 4px;
+}
+
+#nav-sidebar .current-app a, #nav-sidebar .current-model a {
+    color: var(--soft-lavender) !important;
+    font-weight: 600;
+}
+
+.breadcrumbs {
+    background: var(--ivory-beige);
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.breadcrumbs a {
+    color: var(--purple-blue) !important;
+}
+
+fieldset {
+    border: 1px solid var(--pale-sky);
+    border-radius: 8px;
+    background: white;
+}
+
+fieldset h2 {
+    background: var(--ivory-beige) !important;
+    color: var(--dark-gray) !important;
+    padding: 12px 16px;
+    margin: -1px -1px 16px -1px;
+    border-radius: 7px 7px 0 0;
+}
+
+.aligned label {
+    color: var(--dark-gray);
+    font-weight: 500;
+}
+
+input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="url"], textarea, select {
+    border: 1.5px solid var(--pale-sky);
+    border-radius: 6px;
+    padding: 8px 12px;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, input[type="number"]:focus, input[type="url"]:focus, textarea:focus, select:focus {
+    border-color: var(--soft-lavender);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(168, 175, 237, 0.15);
+}
+
+.object-tools a {
+    background: var(--dark-gray) !important;
+    color: white !important;
+    border-radius: 6px;
+    padding: 8px 14px;
+}
+
+.object-tools a:hover {
+    background: var(--purple-blue) !important;
+}
+
+.paginator {
+    background: var(--ivory-beige);
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.paginator a:link, .paginator a:visited {
+    background: white;
+    border: 1px solid var(--pale-sky);
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: var(--purple-blue);
+}
+
+.paginator a:hover {
+    background: var(--pale-sky);
+}
+
+ul.messagelist li {
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+}
+
+ul.messagelist li.success {
+    background: #E8F5E9;
+    border-left: 4px solid #4CAF50;
+}
+
+ul.messagelist li.warning {
+    background: #FFF8E1;
+    border-left: 4px solid #FF9800;
+}
+
+ul.messagelist li.error {
+    background: #FFEBEE;
+    border-left: 4px solid #F44336;
 }
 
 @media (max-width: 767px) {
-    #header { padding: 10px; }
-    #branding h1 { font-size: 18px; }
-    .module, .dashboard #content { padding: 10px; }
+    #header { padding: 12px 16px; }
+    #branding h1 { font-size: 1.125rem; }
+    .module, .dashboard #content { padding: 12px; }
+    body.login #container { margin: 20px; border-radius: 12px; }
 }
