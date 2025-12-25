@@ -1,0 +1,235 @@
+## **Master Directive to the AI Agent – Full UI/UX & Functional Re-Architecture**
+
+At this stage, incremental tweaks are no longer acceptable. Although many requested changes were applied, the **Admin panel, landing pages, and overall ergonomics still show minimal visible improvement**. Text readability, color contrast, background fills, and component hierarchy remain weak. The system still feels visually flat, inconsistent, and difficult to scan or use confidently.
+
+This project originated from my own functional foundation. I engaged an AI agent specifically to **elevate it far beyond that baseline**. I now expect a **major, obvious, and transformative change** across the entire platform, both **functionally and in UI/UX quality**.
+
+---
+
+## **Strategic Reset Required**
+
+Stop incremental patching and perform a **full product-level reassessment**, including:
+
+1. Line-by-line review of every screen, component, and interaction
+2. Market and competitor research (POS systems, hospitality SaaS, booking platforms, multi-tenant admin products)
+3. Redesign of layouts, spacing, hierarchy, typography, and interactions
+4. Simplification of workflows so even non-technical users can operate the system confidently
+5. Refactoring UI components into a consistent, reusable design system
+
+---
+
+## **Product Model Assumption (Mandatory Context)**
+
+Treat this project as a **subscription-based, service-oriented SaaS platform**:
+
+* Each outlet is an **independent business client**
+* A **Super Admin (Global Admin)** controls:
+
+  * Outlet creation
+  * Feature availability per outlet (Karaoke, HR, CRM, Inventory, etc.)
+  * Subscription-based access to modules
+* Each outlet independently manages:
+
+  * Employees
+  * Products and inventory
+  * Rooms and services
+  * Branding and portals
+
+The **Admin Panel is the Global Control Center** and must feel powerful, readable, and premium.
+
+---
+
+## **UI / UX OVERHAUL EXPECTATIONS (NON-NEGOTIABLE)**
+
+### **1. Major Visual & Ergonomic Upgrade**
+
+Review every page and component in detail and improve:
+
+* Text readability
+* Color contrast
+* Background and highlight fills
+* Visual balance and spacing
+
+Current issues to eliminate:
+
+* Text blending into backgrounds
+* Poorly defined highlight states
+* Outdated or uneven widget styling
+* Inconsistent font weights and element sizes
+* Lack of clear visual rhythm and hierarchy
+
+The result must feel **modern, calm, elegant, and intentionally designed**, not patched or experimental.
+
+---
+
+## **2. Design Consistency & Hierarchy**
+
+* Establish a unified design system covering:
+
+  * Headings, subheadings, body text
+  * Cards, tables, widgets
+  * Buttons, CTAs, badges, alerts
+* Every module (Admin, POS, Booking, Reports, Tablet UI, Landing Pages) must share the same visual language.
+* Remove duplicate or confusing navigation paths.
+
+---
+
+## **MANDATORY COLOR THEME**
+
+Design a modern, elegant UI using the following palette:
+
+**Primary**
+
+* Soft Lavender: `#A8AFED`
+
+**Secondary Pastels**
+
+* Light Periwinkle: `#D1D8FF`
+* Pale Sky Blue: `#DEE6FC`
+* Pastel Aqua: `#ADDCED`
+
+**Neutrals**
+
+* Cream White: `#FFFDF5`
+* Ivory Beige: `#F2EFE6`
+* Dark Gray: `#333333`
+* True Black: `#000000`
+
+**Accent Gradient**
+
+* Purple Blue: `#7D84E4`
+* Black: `#000000`
+
+Use the **Purple Blue + Black gradient** in hero sections, banners, CTAs, and modal overlays.
+
+---
+
+## **Counter POS – Product Grid Visual Upgrade**
+
+Redesign the POS product grid to include item images.
+
+Each product tile must display:
+
+* Product image (thumbnail, fast-loading)
+* Item name
+* Price (MVR)
+* Live stock quantity
+
+Rules:
+
+* Clean, touch-friendly layout
+* Responsive across POS screens and tablets
+* Fallback icon for missing images
+* Prioritise images for high-selling and low-stock items
+
+---
+
+## **Right-Side Live Bill Panel – Major Revamp (Loyverse-Inspired)**
+
+Redesign the **live bill panel** to match the clarity and usability standards of Loyverse, while extending functionality.
+
+### **1. Credit Customer Handling Model**
+
+Implement a professional credit billing flow:
+
+* Allow bills to be tagged as **“Credit”**
+* Capture:
+
+  * Customer name
+  * Optional contact details
+* Support **partial payments**
+* Display **outstanding balance clearly**
+* Include a **“Settle Later”** option with:
+
+  * Due date
+  * Notes
+* Credit sales must remain visible for reporting but must not block shift settlement
+
+---
+
+### **2. Table Allocation & Visibility**
+
+* Add:
+
+  * Dropdown or quick-select grid for table numbers
+* Display the assigned table **clearly and prominently** in the bill panel
+* Allow:
+
+  * Filtering bills by table
+  * Grouping bills by table
+* Table context must be instantly visible to the cashier
+
+---
+
+### **3. Save & Resume Bill Workflow**
+
+Introduce a proper bill holding mechanism:
+
+* Allow cashier to:
+
+  * Save a bill without charging (e.g., **Hold Bill / Pending Bill**)
+* Preserve:
+
+  * All items
+  * Quantities
+  * Notes
+* Enable resuming the bill later with one click
+* Show:
+
+  * Visual indicators for held bills
+  * Time elapsed since the bill was saved
+
+This must support busy environments without data loss or confusion.
+
+---
+
+### **4. Performance & Usability Rules**
+
+* UI must remain:
+
+  * Fast
+  * Responsive
+  * Mobile- and tablet-friendly
+* Prioritise:
+
+  * Clarity
+  * Speed
+  * Cashier confidence
+* No hidden actions or unclear states
+
+---
+
+## **Landing Pages & First Impression**
+
+Landing pages must:
+
+* Instantly communicate professionalism and trust
+* Clearly guide users to booking, employee login, and client login
+* Compete visually with modern hospitality and SaaS platforms
+* Create a strong emotional and visual impact
+
+---
+
+## **Functional Re-Evaluation**
+
+* Revisit workflows for POS, Booking, Billing, Reports, and Admin configuration
+* Remove friction, unnecessary steps, and confusing layouts
+* Make frequent actions fast and visually obvious
+
+---
+
+## **Expected Outcome**
+
+After this phase:
+
+* The improvement must be **obvious at first glance**
+* The platform should feel:
+
+  * More modern
+  * More intuitive
+  * More premium
+  * More competitive
+* This should look and behave like a **next-generation SaaS product**, not a refined prototype
+
+Do **not** proceed with minor cosmetic changes.
+Treat this as a **full redesign and product refinement phase**, guided by research, UX best practices, and the complete CKMS vision.

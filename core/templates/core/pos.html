@@ -1,107 +1,453 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
-<div class="container-fluid p-4">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h4 class="mb-0 fw-bold">Counter POS</h4>
-                        </div>
-                        <div class="col-md-6">
-                            <input type="text" id="productSearch" class="form-control" placeholder="Search menu items...">
-                        </div>
+<style>
+    .pos-container { 
+        display: grid; 
+        grid-template-columns: 1fr 400px; 
+        gap: 1.5rem; 
+        height: calc(100vh - 120px);
+        padding: 1.5rem;
+    }
+    
+    .products-panel {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+    }
+    
+    .products-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-light);
+        background: var(--ivory-beige);
+    }
+    .products-header h4 {
+        margin: 0 0 1rem 0;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    .category-filters {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    .category-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1.5px solid var(--border-medium);
+        background: white;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .category-btn:hover {
+        border-color: var(--soft-lavender);
+        color: var(--purple-blue);
+    }
+    .category-btn.active {
+        background: var(--gradient-hero);
+        color: white;
+        border-color: transparent;
+    }
+    
+    .products-grid {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.25rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+        align-content: start;
+    }
+    
+    .product-tile {
+        background: white;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .product-tile:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--soft-lavender);
+    }
+    .product-tile:active {
+        transform: scale(0.98);
+    }
+    
+    .product-image {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        background: var(--pale-sky);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: 2rem;
+    }
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .product-info {
+        padding: 0.875rem;
+    }
+    .product-name {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.375rem;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .product-price {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--purple-blue);
+    }
+    .product-stock {
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-top: 0.375rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    .stock-ok { background: #E8F5E9; color: #2E7D32; }
+    .stock-low { background: #FFF8E1; color: #F57C00; }
+    .stock-out { background: #FFEBEE; color: #C62828; }
+    
+    .cart-panel {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-light);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+    }
+    
+    .cart-header {
+        padding: 1.25rem 1.5rem;
+        background: var(--gradient-hero);
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .cart-header h5 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.125rem;
+    }
+    .cart-clear-btn {
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 0.375rem 0.875rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .cart-clear-btn:hover {
+        background: rgba(255,255,255,0.25);
+    }
+    
+    .cart-options {
+        padding: 1rem 1.25rem;
+        background: var(--ivory-beige);
+        border-bottom: 1px solid var(--border-light);
+    }
+    .cart-option-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-bottom: 0.375rem;
+    }
+    .cart-option-select {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1.5px solid var(--border-medium);
+        border-radius: var(--radius-sm);
+        font-size: 0.875rem;
+        background: white;
+        color: var(--text-primary);
+    }
+    .cart-option-select:focus {
+        border-color: var(--soft-lavender);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(168,175,237,0.15);
+    }
+    
+    .cart-items {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 1.25rem;
+    }
+    .cart-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-muted);
+    }
+    .cart-empty i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.3;
+    }
+    
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 0;
+        border-bottom: 1px solid var(--border-light);
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item-info {
+        flex: 1;
+    }
+    .cart-item-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+    }
+    .cart-item-meta {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+    }
+    .cart-item-total {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+    }
+    .cart-item-qty {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-right: 1rem;
+    }
+    .qty-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid var(--border-medium);
+        background: white;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .qty-btn:hover {
+        background: var(--pale-sky);
+        border-color: var(--soft-lavender);
+    }
+    .qty-value {
+        font-weight: 700;
+        min-width: 24px;
+        text-align: center;
+    }
+    
+    .cart-footer {
+        padding: 1.25rem;
+        background: var(--ivory-beige);
+        border-top: 1px solid var(--border-light);
+    }
+    .cart-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .cart-total-label {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+    .cart-total-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--purple-blue);
+    }
+    
+    .payment-select {
+        margin-bottom: 1rem;
+    }
+    
+    .submit-btn {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: var(--radius-sm);
+        background: linear-gradient(135deg, #4CAF50, #66BB6A);
+        color: white;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(76,175,80,0.4);
+    }
+    .submit-btn:disabled {
+        background: var(--text-muted);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    @media (max-width: 992px) {
+        .pos-container {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+        .products-panel {
+            height: 60vh;
+        }
+        .cart-panel {
+            height: auto;
+        }
+    }
+</style>
+
+<div class="pos-container">
+    <div class="products-panel">
+        <div class="products-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="fas fa-cash-register me-2"></i>Counter POS</h4>
+                <input type="text" id="productSearch" class="form-control" style="max-width: 280px;" placeholder="Search menu items...">
+            </div>
+            <div class="category-filters">
+                <button class="category-btn active" data-category="all">All Items</button>
+                {% for cat in categories %}
+                <button class="category-btn" data-category="{{ cat }}">{{ cat }}</button>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="products-grid" id="productGrid">
+            {% for product in products %}
+            <div class="product-tile" 
+                 data-id="{{ product.id }}"
+                 data-name="{{ product.name }}"
+                 data-price="{{ product.selling_price }}"
+                 data-category="{{ product.category|default:'Uncategorized' }}"
+                 onclick="addToCart('{{ product.id }}', '{{ product.name|escapejs }}', '{{ product.selling_price }}')">
+                <div class="product-image">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                    <i class="fas fa-utensils"></i>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-price">MVR {{ product.selling_price }}</div>
+                    <div class="product-stock {% if product.current_stock_level <= 0 %}stock-out{% elif product.current_stock_level <= 5 %}stock-low{% else %}stock-ok{% endif %}">
+                        {% if product.current_stock_level <= 0 %}
+                        Out of Stock
+                        {% elif product.current_stock_level <= 5 %}
+                        Low: {{ product.current_stock_level }}
+                        {% else %}
+                        In Stock: {{ product.current_stock_level }}
+                        {% endif %}
                     </div>
                 </div>
-                <div class="card-body" style="height: 75vh; overflow-y: auto;">
-                    <div class="row g-3" id="productGrid">
-                        {% for product in products %}
-                        <div class="col-md-3 product-card" data-name="{{ product.name|lower }}">
-                            <div class="card h-100 border text-center p-2 shadow-sm" 
-                                 onclick="addToCart('{{ product.id }}', '{{ product.name }}', '{{ product.selling_price }}')"
-                                 style="cursor: pointer;">
-                                <div class="fw-bold mb-1 small">{{ product.name }}</div>
-                                <div class="text-success fw-bold">MVR {{ product.selling_price }}</div>
-                                <div class="text-muted" style="font-size: 0.7rem;">Stock: {{ product.current_stock_level }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted" style="grid-column: 1/-1;">
+                <i class="fas fa-box-open fa-3x mb-3 opacity-25"></i>
+                <p>No products found. Add products in the Admin panel.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="cart-panel">
+        <div class="cart-header">
+            <h5><i class="fas fa-receipt me-2"></i>Current Order</h5>
+            <button class="cart-clear-btn" onclick="clearCart()">
+                <i class="fas fa-trash-alt me-1"></i>Clear
+            </button>
+        </div>
+        
+        <div class="cart-options">
+            <div class="mb-3">
+                <div class="cart-option-label">Customer</div>
+                <select id="customerSelect" class="cart-option-select">
+                    <option value="">Walk-in / Guest</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <div class="cart-option-label">Table / Location</div>
+                <select id="tableSelect" class="cart-option-select">
+                    <option value="Counter">Counter / Take-away</option>
+                    <option value="Table 1">Table 1</option>
+                    <option value="Table 2">Table 2</option>
+                    <option value="Table 3">Table 3</option>
+                    <option value="Table 4">Table 4</option>
+                    <option value="Table 5">Table 5</option>
+                </select>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-dark text-white py-3 d-flex justify-content-between">
-                    <h5 class="mb-0">Current Order</h5>
-                    <button class="btn btn-sm btn-outline-light" onclick="clearCart()">Clear</button>
-                </div>
-                <div class="card-body d-flex flex-column">
-                    
-                    <div class="bg-light p-3 rounded mb-3">
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-uppercase">1. Select Customer</label>
-                            <select id="customerSelect" class="form-select">
-                                <option value="">-- Walk-in / Guest --</option>
-                                {% if customers %}
-                                    {% for customer in customers %}
-                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
-                                    {% endfor %}
-                                {% endif %}
-                            </select>
-                        </div>
-
-                        <div class="mb-0">
-                            <label class="form-label small fw-bold text-uppercase">2. Table / Room Allocation</label>
-                            <select id="tableSelect" class="form-select border-warning">
-                                <option value="Counter">Take-away / Counter</option>
-                                {% if tables %}
-                                <optgroup label="Dining Tables">
-                                    {% for table in tables %}
-                                    <option value="{{ table.name }}">{{ table.name }}</option>
-                                    {% endfor %}
-                                </optgroup>
-                                {% endif %}
-                                {% if rooms %}
-                                <optgroup label="Karaoke Rooms">
-                                    {% for room in rooms %}
-                                    <option value="{{ room.name }}">{{ room.name }}</option>
-                                    {% endfor %}
-                                </optgroup>
-                                {% endif %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="cartItems" class="flex-grow-1 overflow-auto mb-3" style="max-height: 35vh;">
-                        <p class="text-center text-muted py-5">No items selected.</p>
-                    </div>
-
-                    <div class="border-top pt-3">
-                        <div class="d-flex justify-content-between mb-3">
-                            <span class="h5">Total:</span>
-                            <span class="h4 fw-bold text-success">MVR <span id="totalPrice">0.00</span></span>
-                        </div>
-                        
-                        <div class="row g-2 mb-3">
-                            <div class="col-12">
-                                <label class="small fw-bold">Payment Method</label>
-                                <select id="paymentMethod" class="form-select bg-light">
-                                    <option value="Cash">Cash</option>
-                                    <option value="Transfer">Bank Transfer</option>
-                                    <option value="Card">Card</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <button id="submitBtn" onclick="submitSale()" class="btn btn-success btn-lg w-100 py-3 shadow-sm fw-bold">
-                            SUBMIT & PRINT
-                        </button>
-                    </div>
-                </div>
+        <div class="cart-items" id="cartItems">
+            <div class="cart-empty">
+                <i class="fas fa-shopping-basket"></i>
+                <p>No items in cart</p>
             </div>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total-row">
+                <span class="cart-total-label">Total</span>
+                <span class="cart-total-value">MVR <span id="totalPrice">0.00</span></span>
+            </div>
+            
+            <div class="payment-select">
+                <div class="cart-option-label">Payment Method</div>
+                <select id="paymentMethod" class="cart-option-select">
+                    <option value="Cash">Cash</option>
+                    <option value="Transfer">Bank Transfer</option>
+                    <option value="Card">Card</option>
+                    <option value="Credit">Credit (Pay Later)</option>
+                </select>
+            </div>
+
+            <button id="submitBtn" onclick="submitSale()" class="submit-btn">
+                <i class="fas fa-check-circle"></i>
+                Complete Sale
+            </button>
         </div>
     </div>
 </div>
@@ -119,39 +465,68 @@
         renderCart();
     }
 
-    function clearCart() { cart = []; renderCart(); }
+    function updateQty(id, delta) {
+        const item = cart.find(i => i.id === id);
+        if (item) {
+            item.quantity += delta;
+            if (item.quantity <= 0) {
+                cart = cart.filter(i => i.id !== id);
+            }
+        }
+        renderCart();
+    }
+
+    function clearCart() { 
+        cart = []; 
+        renderCart(); 
+    }
 
     function renderCart() {
         const cartDiv = document.getElementById('cartItems');
         const totalSpan = document.getElementById('totalPrice');
         
         if (cart.length === 0) {
-            cartDiv.innerHTML = '<p class="text-center text-muted py-5">No items selected.</p>';
+            cartDiv.innerHTML = `
+                <div class="cart-empty">
+                    <i class="fas fa-shopping-basket"></i>
+                    <p>No items in cart</p>
+                </div>`;
             totalSpan.innerText = '0.00';
             return;
         }
 
-        let html = '<div class="list-group list-group-flush">';
+        let html = '';
         let total = 0;
         cart.forEach(item => {
-            total += (item.price * item.quantity);
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
             html += `
-                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-                    <div><span class="fw-bold">${item.name}</span><br><small class="text-muted">${item.quantity} x MVR ${item.price}</small></div>
-                    <span class="fw-bold">MVR ${(item.price * item.quantity).toFixed(2)}</span>
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-meta">MVR ${item.price.toFixed(2)} each</div>
+                    </div>
+                    <div class="cart-item-qty">
+                        <button class="qty-btn" onclick="updateQty('${item.id}', -1)">-</button>
+                        <span class="qty-value">${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQty('${item.id}', 1)">+</button>
+                    </div>
+                    <div class="cart-item-total">MVR ${itemTotal.toFixed(2)}</div>
                 </div>`;
         });
-        html += '</div>';
         cartDiv.innerHTML = html;
         totalSpan.innerText = total.toFixed(2);
     }
 
     async function submitSale() {
-        if (cart.length === 0) return alert("Please add items first.");
+        if (cart.length === 0) {
+            alert("Please add items to the cart first.");
+            return;
+        }
         
         const btn = document.getElementById('submitBtn');
         btn.disabled = true;
-        btn.innerText = "Processing...";
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
         const data = {
             customer_id: document.getElementById('customerSelect').value,
@@ -164,30 +539,49 @@
         try {
             const response = await fetch('/api/pos/submit/', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
                 body: JSON.stringify(data)
             });
             const result = await response.json();
             if (result.success) {
-                alert("Sale Recorded for " + data.table_number);
+                alert("Sale completed for " + data.table_number);
                 clearCart();
                 location.reload();
             } else {
                 alert("Error: " + (result.error || "Unknown error"));
                 btn.disabled = false;
-                btn.innerText = "SUBMIT & PRINT";
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Sale';
             }
         } catch (e) {
             alert("Connection error: " + e);
             btn.disabled = false;
-            btn.innerText = "SUBMIT & PRINT";
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Complete Sale';
         }
     }
 
     document.getElementById('productSearch').addEventListener('input', function(e) {
         const term = e.target.value.toLowerCase();
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.style.display = card.dataset.name.includes(term) ? 'block' : 'none';
+        document.querySelectorAll('.product-tile').forEach(tile => {
+            const name = tile.dataset.name.toLowerCase();
+            tile.style.display = name.includes(term) ? 'block' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const category = this.dataset.category;
+            document.querySelectorAll('.product-tile').forEach(tile => {
+                if (category === 'all' || tile.dataset.category === category) {
+                    tile.style.display = 'block';
+                } else {
+                    tile.style.display = 'none';
+                }
+            });
         });
     });
 </script>

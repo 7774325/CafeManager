@@ -3,142 +3,721 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Your Session | ESPECIALLY FOR YOU</title>
+    <title>ESPECIALLY FOR YOU | Premium Karaoke Experience</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --lavender-mist: #E6DAF3;
-            --lavender-blue: #CCCCFF;
-            --deep-black: #000000;
+            --soft-lavender: #A8AFED;
+            --light-periwinkle: #D1D8FF;
+            --pale-sky: #DEE6FC;
+            --pastel-aqua: #ADDCED;
+            --cream-white: #FFFDF5;
+            --ivory-beige: #F2EFE6;
+            --dark-gray: #333333;
+            --true-black: #000000;
+            --purple-blue: #7D84E4;
+            --gradient-hero: linear-gradient(135deg, #000000 0%, #7D84E4 100%);
             --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             --font-heading: 'Poppins', 'Inter', sans-serif;
         }
-        * { font-family: var(--font-primary); }
+        
+        * { 
+            font-family: var(--font-primary);
+            -webkit-font-smoothing: antialiased;
+        }
         h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }
-        body { background: linear-gradient(135deg, var(--deep-black) 0%, #1a1a2e 100%); color: white; }
+        
+        body { 
+            background: var(--cream-white);
+            color: var(--dark-gray);
+            overflow-x: hidden;
+        }
+        
+        .navbar {
+            padding: 1.25rem 0;
+            transition: all 0.3s ease;
+        }
+        .navbar.scrolled {
+            background: rgba(0,0,0,0.95) !important;
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 0;
+        }
+        .navbar-brand {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        .nav-link {
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem !important;
+            transition: color 0.2s;
+        }
+        .nav-link:hover { color: var(--soft-lavender) !important; }
+        
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(26,26,46,0.8)), url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover; background-position: center; padding: 100px 0; text-align: center;
+            background: var(--gradient-hero);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
         }
-        .card { background: #1a1a2e; border: 1px solid rgba(204,204,255,0.2); color: white; }
-        .btn-primary { 
-            background: linear-gradient(135deg, var(--lavender-blue) 0%, var(--lavender-mist) 100%); 
-            border: none; 
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(168,175,237,0.1)" stroke-width="0.5"/></svg>');
+            background-size: 200px;
+            animation: float 20s linear infinite;
+        }
+        @keyframes float {
+            from { transform: translateY(0) rotate(0deg); }
+            to { transform: translateY(-100px) rotate(10deg); }
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 5.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, var(--soft-lavender), var(--light-periwinkle));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255,255,255,0.8);
+            max-width: 500px;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+        }
+        
+        .btn-hero {
+            background: linear-gradient(135deg, var(--soft-lavender), var(--light-periwinkle));
+            color: var(--true-black);
             font-weight: 600;
-            color: var(--deep-black);
+            font-size: 1rem;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            border: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(168,175,237,0.4);
         }
-        .btn-primary:hover { 
-            background: linear-gradient(135deg, var(--lavender-mist) 0%, #d4c8e8 100%);
-            color: var(--deep-black);
+        .btn-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(168,175,237,0.5);
+            color: var(--true-black);
         }
-        .room-badge { position: absolute; top: 10px; right: 10px; background: rgba(204, 204, 255, 0.9); color: #000; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-        .review-star { color: #ffcc00; }
-        .text-info { color: var(--lavender-mist) !important; }
+        .btn-outline-hero {
+            background: transparent;
+            color: white;
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-outline-hero:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+        }
+        
+        .hero-visual {
+            position: relative;
+        }
+        .hero-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 2rem;
+            color: white;
+        }
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--soft-lavender);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.5rem;
+        }
+        
+        .section { padding: 6rem 0; }
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+        }
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+        
+        .portal-section { background: var(--ivory-beige); }
+        
+        .portal-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+            height: 100%;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+        }
+        .portal-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        .portal-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+        .portal-icon.employee { background: linear-gradient(135deg, #1a1a2e, #2d2d44); color: white; }
+        .portal-icon.admin { background: linear-gradient(135deg, var(--purple-blue), var(--soft-lavender)); color: white; }
+        .portal-icon.booking { background: linear-gradient(135deg, #4CAF50, #66BB6A); color: white; }
+        
+        .portal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--dark-gray);
+        }
+        .portal-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+        .portal-btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .portal-btn.dark {
+            background: var(--dark-gray);
+            color: white;
+        }
+        .portal-btn.dark:hover {
+            background: var(--true-black);
+            color: white;
+        }
+        .portal-btn.purple {
+            background: var(--gradient-hero);
+            color: white;
+        }
+        .portal-btn.purple:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+        .portal-btn.green {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+        }
+        .portal-btn.green:hover {
+            transform: scale(1.05);
+            color: white;
+        }
+        
+        .room-card {
+            border-radius: 20px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        .room-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+        }
+        .room-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .room-card-body {
+            padding: 1.5rem;
+        }
+        .room-badge {
+            display: inline-block;
+            background: var(--gradient-hero);
+            color: white;
+            padding: 0.35rem 1rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+        .room-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .room-desc {
+            font-size: 0.875rem;
+            color: #666;
+        }
+        
+        .booking-section {
+            background: var(--gradient-hero);
+            position: relative;
+        }
+        .booking-form-card {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .booking-form-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+        .booking-form-subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        .form-floating label {
+            color: #888;
+        }
+        .form-control, .form-select {
+            border: 2px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--soft-lavender);
+            box-shadow: 0 0 0 4px rgba(168,175,237,0.15);
+        }
+        .btn-submit {
+            background: var(--gradient-hero);
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: none;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(125,132,228,0.4);
+            color: white;
+        }
+        
+        .review-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+        .review-stars {
+            color: #FFB800;
+            margin-bottom: 0.75rem;
+        }
+        .review-text {
+            font-size: 0.95rem;
+            color: #444;
+            font-style: italic;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        .review-author {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        footer {
+            background: var(--true-black);
+            padding: 3rem 0;
+        }
+        .footer-brand {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .footer-text {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        .footer-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover {
+            color: var(--soft-lavender);
+        }
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 2rem;
+            margin-top: 2rem;
+        }
+        .copyright {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <a class="navbar-brand fw-bold" style="color: #E6DAF3 !important;" href="/">ESPECIALLY FOR YOU</a>
+        <a class="navbar-brand" href="/">ESPECIALLY FOR YOU</a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav align-items-center gap-2">
+                <li class="nav-item"><a class="nav-link text-white" href="#rooms">Rooms</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="#reviews">Reviews</a></li>
+                <li class="nav-item"><a class="nav-link text-white" href="/login/">Manager Login</a></li>
+            </ul>
+        </div>
     </div>
 </nav>
 
 <header class="hero-section">
     <div class="container">
-        <h1 class="display-3 fw-bold">Sing Your Heart Out</h1>
-        <p class="lead text-light">Private Rooms • Premium Sound • Best Vibes in Town</p>
-        <a href="#book-now" class="btn btn-primary btn-lg px-5 mt-3">BOOK A ROOM</a>
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title">
+                    Sing Your<br><span>Heart Out</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Premium private karaoke rooms with world-class sound systems. 
+                    Create unforgettable moments with friends and family.
+                </p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="#book-now" class="btn btn-hero">
+                        <i class="fas fa-calendar-check me-2"></i>Book Now
+                    </a>
+                    <a href="#rooms" class="btn btn-outline-hero">
+                        <i class="fas fa-play me-2"></i>View Rooms
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 offset-lg-1 mt-5 mt-lg-0 hero-visual">
+                <div class="hero-card">
+                    <h4 class="mb-3">Why Choose Us?</h4>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--soft-lavender);"></i> Premium JBL Sound Systems</li>
+                        <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--soft-lavender);"></i> 85" 4K Display Screens</li>
+                        <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--soft-lavender);"></i> Full F&B Service</li>
+                        <li class="mb-0"><i class="fas fa-check-circle me-2" style="color: var(--soft-lavender);"></i> Private VIP Suites</li>
+                    </ul>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">50K+</div>
+                            <div class="stat-label">Happy Guests</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">4.9</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">24/7</div>
+                            <div class="stat-label">Service</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </header>
 
-<div class="container my-5">
-    <div class="row">
-        <div class="col-lg-7">
-            <h3 class="mb-4">Our Experience</h3>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="card h-100 overflow-hidden position-relative">
-                        <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=2069&auto=format&fit=crop" class="card-img-top" alt="VIP">
-                        <span class="room-badge">VIP ROOM</span>
-                        <div class="card-body">
-                            <h6>Premium VIP Suite</h6>
-                            <p class="small text-muted">Up to 15 people. Dedicated service & 85" Screen.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card h-100 overflow-hidden position-relative">
-                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop" class="card-img-top" alt="Standard">
-                        <span class="room-badge">STANDARD</span>
-                        <div class="card-body">
-                            <h6>Standard Party Room</h6>
-                            <p class="small text-muted">Up to 6 people. High-quality JBL Sound.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <h4 class="mt-5 mb-3">Customer Reviews</h4>
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="mb-1">
-                        <i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i><i class="fas fa-star review-star"></i>
-                    </div>
-                    <p class="mb-0 italic text-light">"Best sound system in the city! The VIP room felt so exclusive."</p>
-                    <small class="text-muted">- Adam R.</small>
-                </div>
-            </div>
+<section class="section portal-section" id="access">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Access Portal</h2>
+            <p class="section-subtitle">Choose your portal to get started</p>
         </div>
-
-        <div class="col-lg-5" id="book-now">
-            <div class="card shadow-lg sticky-top" style="top: 20px;">
-                <div class="card-body p-4">
-                    <h3 class="text-center text-info mb-4">Request a Booking</h3>
-                    <form action="{% url 'submit_booking_request' %}" method="POST">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="customer_name" class="form-control bg-dark text-white border-secondary" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" name="phone_number" class="form-control bg-dark text-white border-secondary" required>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Date</label>
-                                <input type="date" name="requested_date" class="form-control bg-dark text-white border-secondary" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Time</label>
-                                <input type="time" name="requested_time" class="form-control bg-dark text-white border-secondary" required>
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label">Duration</label>
-                            <select name="duration" class="form-select bg-dark text-white border-secondary">
-                                <option value="60">1 Hour</option>
-                                <option value="120">2 Hours</option>
-                                <option value="180">3 Hours</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 py-3">SUBMIT REQUEST</button>
-                    </form>
-                    <p class="small text-center text-muted mt-3">Submitting does not guarantee a slot. Sita will confirm via phone.</p>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-4">
+                <div class="portal-card">
+                    <div class="portal-icon employee">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <h3 class="portal-title">Employee Portal</h3>
+                    <p class="portal-desc">Staff login for POS, kitchen, and daily operations management.</p>
+                    <a href="/login/" class="portal-btn dark">Sign In</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="portal-card">
+                    <div class="portal-icon admin">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <h3 class="portal-title">Admin Panel</h3>
+                    <p class="portal-desc">System configuration, reports, HR, and outlet management.</p>
+                    <a href="/admin/" class="portal-btn purple">Admin Access</a>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="portal-card">
+                    <div class="portal-icon booking">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3 class="portal-title">Make a Booking</h3>
+                    <p class="portal-desc">Reserve your private karaoke room for any occasion.</p>
+                    <a href="#book-now" class="portal-btn green">Book Now</a>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<footer class="py-4 text-center mt-5" style="background: linear-gradient(135deg, #000000 0%, #1a1a2e 100%); border-top: 2px solid #CCCCFF;">
-    <p class="text-white-50 mb-0" style="font-family: 'Poppins', sans-serif; letter-spacing: 0.05em;">&copy; 2025 ESPECIALLY FOR YOU. Crafted with <span style="color: #E6DAF3;">&#128156;</span> by ESPECIALLY FOR YOU</p>
+<section class="section" id="rooms">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Our Premium Rooms</h2>
+            <p class="section-subtitle">Experience karaoke like never before in our state-of-the-art private suites</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="room-card">
+                    <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=2069&auto=format&fit=crop" alt="VIP Suite">
+                    <div class="room-card-body">
+                        <span class="room-badge">VIP Suite</span>
+                        <h4 class="room-title">Premium VIP Experience</h4>
+                        <p class="room-desc">Up to 15 guests with dedicated service, 85" screen & premium sound.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="room-card">
+                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop" alt="Party Room">
+                    <div class="room-card-body">
+                        <span class="room-badge">Party Room</span>
+                        <h4 class="room-title">Standard Party Room</h4>
+                        <p class="room-desc">Perfect for groups of 6-8, high-quality JBL sound system.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="room-card">
+                    <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=2070&auto=format&fit=crop" alt="Couple Room">
+                    <div class="room-card-body">
+                        <span class="room-badge">Intimate</span>
+                        <h4 class="room-title">Couple's Corner</h4>
+                        <p class="room-desc">Cozy setting for 2-4 people, perfect for intimate gatherings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" style="background: var(--pale-sky);" id="reviews">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">What Our Guests Say</h2>
+            <p class="section-subtitle">Don't just take our word for it</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="review-card">
+                    <div class="review-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"Best sound system in the city! The VIP room felt so exclusive. Will definitely come back!"</p>
+                    <div class="review-author">- Adam R.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="review-card">
+                    <div class="review-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"Perfect for our company event! Staff was incredibly helpful and the food was amazing."</p>
+                    <div class="review-author">- Sarah M.</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="review-card">
+                    <div class="review-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p class="review-text">"The booking process was seamless. Great song selection and the rooms are spotless!"</p>
+                    <div class="review-author">- Michael K.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section booking-section" id="book-now">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-5 text-white mb-5 mb-lg-0">
+                <h2 class="display-5 fw-bold mb-4">Ready to Sing?</h2>
+                <p class="lead opacity-75 mb-4">Book your private karaoke experience today. Our team will confirm your reservation within 24 hours.</p>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-white bg-opacity-10 rounded-circle p-3">
+                        <i class="fas fa-phone" style="color: var(--soft-lavender);"></i>
+                    </div>
+                    <div>
+                        <div class="small opacity-75">Call Us</div>
+                        <div class="fw-semibold">+960 123-4567</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-white bg-opacity-10 rounded-circle p-3">
+                        <i class="fas fa-map-marker-alt" style="color: var(--soft-lavender);"></i>
+                    </div>
+                    <div>
+                        <div class="small opacity-75">Location</div>
+                        <div class="fw-semibold">Male', Maldives</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 offset-lg-1">
+                <div class="booking-form-card">
+                    <h3 class="booking-form-title">Request a Booking</h3>
+                    <p class="booking-form-subtitle">Fill in your details and we'll get back to you</p>
+                    <form action="{% url 'submit_booking_request' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Full Name</label>
+                            <input type="text" name="customer_name" class="form-control" placeholder="Enter your name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Phone Number</label>
+                            <input type="tel" name="phone_number" class="form-control" placeholder="+960 XXX-XXXX" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Preferred Date</label>
+                                <input type="date" name="requested_date" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Preferred Time</label>
+                                <input type="time" name="requested_time" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Duration</label>
+                            <select name="duration" class="form-select">
+                                <option value="60">1 Hour</option>
+                                <option value="120" selected>2 Hours</option>
+                                <option value="180">3 Hours</option>
+                                <option value="240">4 Hours</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Request
+                        </button>
+                        <p class="small text-center text-muted mt-3 mb-0">We'll confirm your booking via phone within 24 hours</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <div class="footer-brand">ESPECIALLY FOR YOU</div>
+                <p class="footer-text">Premium karaoke entertainment in the heart of Male'. Creating unforgettable moments since 2020.</p>
+            </div>
+            <div class="col-6 col-lg-2 offset-lg-2 footer-links">
+                <h6 class="text-white mb-3">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#rooms">Our Rooms</a></li>
+                    <li class="mb-2"><a href="#book-now">Book Now</a></li>
+                    <li class="mb-2"><a href="#reviews">Reviews</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-lg-2 footer-links">
+                <h6 class="text-white mb-3">Access</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/login/">Employee Login</a></li>
+                    <li class="mb-2"><a href="/admin/">Admin Panel</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-2 footer-links">
+                <h6 class="text-white mb-3">Connect</h6>
+                <div class="d-flex gap-3">
+                    <a href="#"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="#"><i class="fab fa-instagram fa-lg"></i></a>
+                    <a href="#"><i class="fab fa-tiktok fa-lg"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom text-center">
+            <p class="copyright mb-0">&copy; 2025 ESPECIALLY FOR YOU. Crafted with <span style="color: #A8AFED;">&#128156;</span> by ESPECIALLY FOR YOU</p>
+        </div>
+    </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+</script>
 </body>
 </html>
